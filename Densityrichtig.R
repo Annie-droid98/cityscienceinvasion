@@ -1260,7 +1260,7 @@ ggplot(separated_coord_Nürnberg_Coccinella, aes(x = long, y = lat)) +
 # Change line color and fill color
 ggplot(separated_coord_Berlin_Coccinella, aes(x=long, z=lat))+
   geom_density(color="darkblue", fill="lightblue")
-
+#funktioniert nicht wirklich
 ggplot(rbind(data.frame(separated_coord_Berlin_ab_2000, group="a"), data.frame(separated_coord_Berlin_Coccinella, group="b")), 
        aes(x=long,y=lat)) + 
   stat_density2d(geom="density2d", aes(color = group,alpha=..level..),
@@ -1282,28 +1282,20 @@ ggplot(rbind(data.frame(separated_coord_Berlin_ab_2000, group="a"), data.frame(s
   xlim(52.2, 52.8) + ylim(13.0, 13.6) +
   coord_cartesian(xlim = c(52.2, 52.8), ylim = c(13.0, 13.6))
 #andere Art aber hier hängt das Bild davon ab, welche Daten ich zuerst plotte
-ggplot(rbind(data.frame(separated_coord_Berlin_ab_2000, group="a"), data.frame(separated_coord_Berlin_Coccinella, group="b")), aes(x=long,y=lat)) + 
-  stat_density2d(geom="tile", aes(fill = group, alpha=..density..), contour=FALSE) + 
-  scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
-  theme_minimal() 
+rbind(data.frame(separated_coord_Berlin_ab_2000, group="a"), data.frame(separated_coord_Berlin_Coccinella, group="b")) %>%
+  filter(year==2019) %>%
+ggplot(aes(x=long,y=lat)) + 
+  stat_density2d( aes(color = group)) + 
+ # scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
+  theme_minimal() +
+  geom_point(aes(color = group, alpha=0.5)) 
 #mit und ohne geom_point
 ggplot(rbind(data.frame(separated_coord_Berlin_ab_2000, group="a"), data.frame(separated_coord_Berlin_Coccinella, group="b")), aes(x=long,y=lat)) + 
   stat_density2d(geom="tile", aes(fill = group, alpha=..density..), contour=FALSE) + 
   scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
   geom_point() +
   theme_minimal() 
-
-#Versuch eine Backroundmap zu bekommen
-install.packages(c("httr", "jsonlite"))
-library(httr)
-library(jsonlite)
-library(ggmap)
-Berlin <- c(lon = 52.5200, lat = 13.4050)
-Berlin_map <- get_map(location = Berlin)
-register_google(key = "AIzaSyDby8bdbN4Jt85W5bQrFnjJXNtsO1_YFrU", write = TRUE)
-
-
-#nderer Versuch einer density map verstehe nur noch nicht wofür mean und Standartabweichung ist und wie ich die Achsen zu log und lat machen kann
+#anderer Versuch einer density map verstehe nur noch nicht wofür mean und Standartabweichung ist und wie ich die Achsen zu log und lat machen kann
 
 set.seed(4)
 g = list(NA,NA)
@@ -1330,16 +1322,124 @@ library(raster)
 library(sf)
 install.packages("spatstat")
 library(spatstat)
+library(rgdal)
+library(broom)
 
+by(separated_coord_Berlin_ab_2000, separated_coord_Berlin_ab_2000$year, 
+   function(x){
+  P   <- as.ppp(x) 
+  marks(P) <- NULL
+  quadratcount(P, nx=6, ny=3)
+   })
+
+#selbe Funktion funktioniert hier nicht
+by(separated_coord_Bremen_Coccinella, separated_coord_Bremen_Coccinella$year,
+   function(y){
+     R <- as.ppp(y)
+     marks(R) <- NULL
+     quadratcount(R, nx=6, ny=3)
+   })
+
+
+
+scale()
+  
 Berlin_2000  <- as.ppp(separated_coord_Berlin_ab_2000)
 marks(Berlin_2000) <- NULL
+
+
 Q <- quadratcount(Berlin_2000, nx= 6, ny=3)
 Q
+Berlin_2000_C7 <- as.ppp(separated_coord_Berlin_Coccinella)
+marks(Berlin_2000_C7) <- NULL
+R <- quadratcount(Berlin_2000_C7, nx= 6, ny= 3)
+R
+R-Q
+#noche einen Quadratcount für C7 und dann Differenz über die Jahre 
 plot(Berlin_2000, main=NULL, cols=rgb(0,0,0,.2), pch=20)
 plot(Berlin_2000, pch=20, cols="grey70", main=NULL)  # Plot points
 plot(Q, add=TRUE) # Add quadrat grid
+
+
+class(Q)
+
+
+Q+Q
+#Versuch eine Backroundmap zu bekommen
+install.packages(c("httr", "jsonlite"))
+library(httr)
+library(jsonlite)
+library(ggmap)
+Berlin <- c(lon = 52.5200, lat = 13.4050)
+Berlin_map <- get_map(location = Berlin)
+register_google(key = "AIzaSyBH9ZncAfoSpsIbfLeL5Xbf9U0kkMY8zo8", write = TRUE)
+
+
+AIzaSyDby8bdbN4Jt85W5bQrFnjJXNtsO1_YFrU
+# Library
+library(ggmap)
+
+# For google map, you have to give the center of the window you are looking at.
+# Possibility for the map type argument: terrain / satellite / roadmap / hybrid
+
+# get the map info
+map_Deutschland <- get_googlemap("Berlin, Germany", zoom = 8, maptype = "terrain")
+
+# Plot it
+ggmap(map_Deutschland) + 
+  theme_void() + 
+  ggtitle("terrain") + 
+  theme(
+    plot.title = element_text(colour = "orange"), 
+    panel.border = element_rect(colour = "grey", fill=NA, size=2)
+  )
+
+
 separated_coord_Berlin_ab_2000
 separated_coord_Berlin_Coccinella
+
+germany <- getData(country = "Germany", level = 1) 
+?getData
+
+
+#Plotted Map Deutschland Umrisse
+getwd()
+setwd("C:/Users/User/Documents/Bachelorarbeit/DEU_adm")
+getwd()
+Deutschland <- readOGR("DEU_adm0.shp")
+# 'fortify' the data to get a dataframe format required by ggplot2
+library(broom)
+spdf_fortified_Deutschland <- tidy(Deutschland)
+# Plot it
+library(ggplot2)
+
+
+ggplot() +
+  geom_polygon(data = spdf_fortified_Deutschland, aes( x = long, y = lat, group = group), fill="#69b3a2", color="white") +
+  geom_point(data = points_within_Berlin_ab_2000_Coccinella)
+theme_void()
+
+#Versuch die Beobachtungen drauf zu plotten
+ggplot() +
+geom_polygon(data = spdf_fortified_Deutschland, aes( x = long, y = lat, group = group), fill="#69b3a2", color="white") +
+theme_void() +
+geom_point(data=separated_coord_Berlin_Coccinella, aes(long, lat), inherit.aes = FALSE, alpha = 0.5, size = 0.5) + coord_equal()
+
+# Versuch die Beobachtungen drauf zu plotten der funktioniert
+ggplot(spdf_fortified_Deutschland, aes(long, lat, group = group)) + 
+  geom_polygon(alpha = 0.5) +
+  geom_path(color = "white") +
+  coord_equal() +
+  scale_fill_identity() +
+  theme(legend.position = "none") +
+  geom_point(data=separated_coord_Berlin_ab_2000, aes(lat, long), inherit.aes = FALSE, alpha = 0.5, size = 0.5) + coord_equal() +
+  facet_wrap(~year)
+
+
+#Separierung der Buffer Koordinaten funktioniert nicht
+separated_coord_buffer_sf <- buffer_sf_getrennt %>%
+  mutate(lat = unlist(map(buffer_sf_getrennt$geometry,1)),
+         long = unlist(map(buffer_sf_getrennt$geometry,2)))
 
 
 occ_inBufferplot
@@ -1447,6 +1547,31 @@ ggplot(searchbuffer, aes(x = decimalLongitude, y = decimalLatitude)) +
 search_beide_Spezien
 searchalleHarmonialleJahre
  
- occ_Harmonia_nach_Jahren <- table(searchalleHarmonialleJahre2$year)
-occ_Coccinella_nach_Jahren <- table(searchCoccinellaalleJahre2$year)
-occ_Harmonia_nach_Jahren - occ_Coccinella_nach_Jahren
+beide_nach_Jahren <- table(search_beide_Spezien$year)
+beide_nach_Jahren
+
+table(separated_coord_Berlin_ab_2000$year)
+table(separated_coord_Berlin_Coccinella$year)
+#Versuch eine Funktion zu schreiben für die Buffer
+ListederBuffer<- list(buffer_sf, Bremen_Buffer, München_Buffer, Essen_Buffer, Köln_Buffer, FrankfurtamMain_Buffer, Stuttgart_Buffer, Düsseldorf_Buffer, Leipzig_Buffer, Dortmund_Buffer, Hannover_Buffer, Nürnberg_Buffer, Leipzig_Buffer)
+Versuch_Funktion_Buffer <- function(ListederBuffer) {
+  points_within_the_Buffers <- searchCoccinellaalleJahre2.2[st_within( searchCoccinellaalleJahre2.2, ListederBuffer, sparse = F), ]
+  points_within_the_Buffers %>%
+    mutate(lat = unlist(map(points_within_the_Buffers$geometry,1)),
+           long = unlist(map(points_within_the_Buffers$geometry,2)))
+}
+  Versuch_Funktion_Buffer_plot <- function(ListederBuffer) {
+    points_within_the_Buffers <- searchCoccinellaalleJahre2.2[st_within( searchCoccinellaalleJahre2.2, ListederBuffer, sparse = F), ]
+  separated_coords_buffer  <- points_within_the_Buffers %>%
+      mutate(lat = unlist(map(points_within_the_Buffers$geometry,1)),
+             long = unlist(map(points_within_the_Buffers$geometry,2)))
+  ggplot(separated_coords_buffer, aes(x = long, y = lat)) + 
+    geom_point(size = 0.1, alpha = 0.05) + 
+    coord_equal() + 
+    xlab('Longitude') + 
+    ylab('Latitude') +
+    facet_wrap(~year)
+}
+Versuch_Funktion_Buffer(buffer_sf)
+Versuch_Funktion_Buffer_plot(buffer_sf)
+Versuch_Funktion_Buffer_plot(Hamburg_Buffer)
