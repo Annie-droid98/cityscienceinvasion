@@ -12,6 +12,24 @@ library(sf)
 library(leaflet)
 library(maps)
 library(rgeos)
+#buffer europa
+#buffer Mittelpunkt Hamburg
+
+Mittelpunkt_Europa <- data.frame(lat=numeric(), long= numeric())
+Mittelpunkt_Europa[1,] <- c(49.843056,9.901944)
+coordinates(Mittelpunkt_Europa) <- ~long + lat
+Mittelpunkt_Europa
+Mittelpunkt_Europasf <- as(Mittelpunkt_Europa, "sf")
+Europa_Buffer <- st_buffer(Mittelpunkt_Europasf, dist = 0.2, endCapStyle="ROUND")
+Europa_Buffer
+
+#visualize the buffer on a map
+mapHamburg_Buffer <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addPolygons(data=Hamburg_Buffer)
+mapHamburg_Buffer
+
+
 #buffer von mir um den Mittelpunkt von Berlin
 example_points <- data.frame(lat=numeric(), long= numeric())
 example_points[1,] <- c(52.5200,13.4050)
@@ -56,6 +74,7 @@ mapMünchen_Buffer <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addPolygons(data=München_Buffer)
 mapMünchen_Buffer
+
 
 #Buffer Köln
 Mittelpunkt_Köln <- data.frame(lat=numeric(), long= numeric())
@@ -1325,23 +1344,24 @@ library(spatstat)
 library(rgdal)
 library(broom)
 
-by(separated_coord_Berlin_ab_2000, separated_coord_Berlin_ab_2000$year, 
+Q_count_Harmonia <- by(separated_coord_Berlin_ab_2000, separated_coord_Berlin_ab_2000$year, 
    function(x){
   P   <- as.ppp(x) 
   marks(P) <- NULL
   quadratcount(P, nx=6, ny=3)
    })
 
-#selbe Funktion funktioniert hier nicht
-by(separated_coord_Bremen_Coccinella, separated_coord_Bremen_Coccinella$year,
-   function(y){
-     R <- as.ppp(y)
-     marks(R) <- NULL
-     quadratcount(R, nx=6, ny=3)
+
+#selbe Funktion anderes funktioniert
+Q_count_C <- by(separated_coord_Berlin_Coccinella, separated_coord_Berlin_Coccinella$year, 
+   function(x){
+     Berlin_2000_C7_2 <- as.ppp(separated_coord_Berlin_Coccinella)
+     marks(Berlin_2000_C7_2) <- NULL
+     A <- quadratcount(Berlin_2000_C7_2, nx= 6, ny= 3)
    })
 
 
-
+Q_count_C
 scale()
   
 Berlin_2000  <- as.ppp(separated_coord_Berlin_ab_2000)
@@ -1355,10 +1375,22 @@ marks(Berlin_2000_C7) <- NULL
 R <- quadratcount(Berlin_2000_C7, nx= 6, ny= 3)
 R
 R-Q
+
+by(separated_coord_Berlin_Coccinella, separated_coord_Berlin_Coccinella$year, 
+   function(x){
+     Berlin_2000_C7_2 <- as.ppp(separated_coord_Berlin_Coccinella)
+     marks(Berlin_2000_C7_2) <- NULL
+     A <- quadratcount(Berlin_2000_C7_2, nx= 6, ny= 3)
+   })
+
+Berlin_2000_C7 <- as.ppp(separated_coord_Berlin_Coccinella)
+marks(Berlin_2000_C7) <- NULL
+R <- quadratcount(Berlin_2000_C7, nx= 6, ny= 3)
 #noche einen Quadratcount für C7 und dann Differenz über die Jahre 
 plot(Berlin_2000, main=NULL, cols=rgb(0,0,0,.2), pch=20)
 plot(Berlin_2000, pch=20, cols="grey70", main=NULL)  # Plot points
 plot(Q, add=TRUE) # Add quadrat grid
+
 
 
 class(Q)
@@ -1553,7 +1585,9 @@ beide_nach_Jahren
 table(separated_coord_Berlin_ab_2000$year)
 table(separated_coord_Berlin_Coccinella$year)
 #Versuch eine Funktion zu schreiben für die Buffer
+
 ListederBuffer<- list(buffer_sf, Bremen_Buffer, München_Buffer, Essen_Buffer, Köln_Buffer, FrankfurtamMain_Buffer, Stuttgart_Buffer, Düsseldorf_Buffer, Leipzig_Buffer, Dortmund_Buffer, Hannover_Buffer, Nürnberg_Buffer, Leipzig_Buffer)
+
 Versuch_Funktion_Buffer <- function(ListederBuffer) {
   points_within_the_Buffers <- searchCoccinellaalleJahre2.2[st_within( searchCoccinellaalleJahre2.2, ListederBuffer, sparse = F), ]
   points_within_the_Buffers %>%
@@ -1575,3 +1609,563 @@ Versuch_Funktion_Buffer <- function(ListederBuffer) {
 Versuch_Funktion_Buffer(buffer_sf)
 Versuch_Funktion_Buffer_plot(buffer_sf)
 Versuch_Funktion_Buffer_plot(Hamburg_Buffer)
+
+
+Berlin_2000  <- as.ppp(separated_coord_Berlin_ab_2000)
+marks(Berlin_2000) <- NULL
+
+
+Q <- quadratcount(Berlin_2000, nx= 6, ny=3)
+
+Q
+
+by(separated_coord_Berlin_ab_2000, separated_coord_Berlin_ab_2000$year, 
+   function(x){
+     P   <- as.ppp(x) 
+     marks(P) <- NULL
+     quadratcount(P, nx=6, ny=3)
+   })
+
+liste_separated_coords <- list(separated_coord_Berlin_ab_2000, separated_coord_Bremen, separated_coord_Dortmund, separated_coord_Dresden, separated_coord_Düsseldorf, separated_coord_Essen, separated_coord_FrankfurtmMain, separated_coord_Hamburg, separated_coord_Hannover, separated_coord_Köln, separated_coord_Leipzig, separated_coord_München, separated_coord_Nürnberg, separated_coord_Stuttgart)
+by(liste_separated_coords, liste_separated_coords$year)
+Quadratcount_für_Städte <- function(liste_separated_coords) {
+  Städte_2000  <- as.ppp(liste_separated_coords)
+  marks(Städte_2000) <- NULL
+  plot(Städte_2000,pch=16,cex=0.5)
+  plot(quadratcount(Städte_2000, nx = 6, ny = 6),add=T,col="red")
+}
+Quadratcount_für_Städte(separated_coord_Berlin_ab_2000)
+
+
+Berlin_2000  <- as.ppp(separated_coord_Berlin_ab_2000)
+marks(Berlin_2000) <- NULL
+
+
+Q <- quadratcount(Berlin_2000, nx= 6, ny=3)
+plot(Berlin_2000,pch=16,cex=0.5)
+plot(quadratcount(Berlin_2000, nx = 6, ny = 6),add=T,col="red", facet_wrap(~year))
+
+Quadratcount_für_Städte <- function(liste_separated_coords) {
+  Städte_2000  <- as.ppp(liste_separated_coords)
+  marks(Städte_2000) <- NULL
+  quadratcount(Städte_Berlin, nx= 6, ny=3)
+  facet_wrap(~year)
+}
+Quadratcount_für_Städte(separated_coord_Berlin_ab_2000)
+
+class(searchalleHarmonialleJahre2.2)
+
+
+#Einlesen der Daten beider Marienkäfer aller Jahre
+getwd()
+setwd("C:/Users/User/Documents/Bachelorarbeit/BachelorarbeitMarienkäfer/DataDeutschlandH+C")
+getwd()
+readfile <- read.delim("Marienkäfer Welt.csv", sep = "\t", quote = "#")
+readfile
+
+
+readfile_selected <- readfile %>%
+  dplyr::select(species, decimalLongitude, decimalLatitude, countryCode,
+                gbifID, family, taxonRank, coordinateUncertaintyInMeters, year,
+                basisOfRecord, institutionCode)
+
+#Filter nach den Jahren ab 2000
+readfile_selected2.1.1 <- data.frame(readfile_selected)
+
+EU_Länder <-  list("DE","BE", "BG", "CZ", "DK", "EE", "IE", "EL", "ES", "FR", "HR", "IT", "CY", "LV", "LT", "LU","HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE") 
+readfile_selected2.1 <- readfile_selected2.1.1 %>%
+  filter(year>1999) %>%
+  filter(countryCode %in% EU_Länder)
+
+readfile_selected2.2 <- readfile_selected2.1 %>% 
+  as.data.frame %>% 
+  sf::st_as_sf(coords = c(2,3))
+readfile_selected2.2
+
+
+separated_coords_Europa  <- readfile_selected2.2 %>%
+  mutate(lat = unlist(map(readfile_selected2.2$geometry,1)),
+         long = unlist(map(readfile_selected2.2$geometry,2)))
+separated_coords_Europa
+
+by(separated_coords_Europa, separated_coords_Europa$year)
+Quadratcount_für_Europa <- function(separated_coords_Europa) {
+  Europa_2000  <- as.ppp(separated_coords_Europa)
+  marks(Europa_2000) <- NULL
+  plot(Europa_2000,pch=16,cex=0.5)
+  plot(quadratcount(Europa_2000, nx = 60, ny = 60),add=T,col="red")
+}
+Quadratcount_für_Europa(separated_coords_Europa)
+
+#Die Funktionert!!
+
+Q_count_Europa <- by(separated_coords_Europa, separated_coords_Europa$year, 
+                function(x){
+                  Europa_Beide_2000 <- as.ppp(x)
+                  marks(Europa_Beide_2000) <- NULL
+                  quadratcount(Europa_Beide_2000, nx= 10, ny= 5)
+                })
+Q_count_Europa
+Q_count_Europa <- by(separated_coords_Europa, separated_coords_Europa$year, 
+                     function(x){
+                       Europa_Beide_2000 <- as.ppp(separated_coords_Europa)
+                       marks(Europa_Beide_2000) <- NULL
+                       Europa <- quadratcount(Europa_Beide_2000, nx= 10, ny= 5)
+                     })
+
+Filter_C7 <- readfile_selected2.2 %>%
+  filter(species == "Coccinella septempunctata") %>%
+  filter(year> 2000)
+Filter_C7
+
+separated_coords_C7  <- Filter_C7 %>%
+  mutate(lat = unlist(map(Filter_C7$geometry,1)),
+         long = unlist(map(Filter_C7$geometry,2)))
+separated_coords_C7
+
+Q_count_C7 <- by(separated_coords_C7, separated_coords_C7$year,
+                 function(x){ 
+                   Europa_C7 <- as.ppp(x)
+                   marks(Europa_C7) <- NULL
+                   count_Europa_C7 <- quadratcount(Europa_C7, nx= 10, ny= 5)
+                 })
+Q_count_C7
+
+
+Filter_Harmonia <- readfile_selected2.2 %>%
+  filter(species == "Harmonia axyridis")
+Filter_Harmonia
+
+separated_coords_Harmonia  <- Filter_Harmonia %>%
+  mutate(lat = unlist(map(Filter_Harmonia$geometry,1)),
+         long = unlist(map(Filter_Harmonia$geometry,2)))
+separated_coords_Harmonia
+
+Filter_Harmonia_ab_2001 <- readfile_selected2.2 %>%
+  filter(species == "Harmonia axyridis") %>%
+  filter(year > 2000)
+Filter_Harmonia_ab_2001
+separated_coords_Harmonia_ab_2001  <- Filter_Harmonia_ab_2001 %>%
+  mutate(lat = unlist(map(Filter_Harmonia_ab_2001$geometry,1)),
+         long = unlist(map(Filter_Harmonia_ab_2001$geometry,2)))
+separated_coords_Harmonia_ab_2000
+
+Q_count_Harmonia <- by(separated_coords_Harmonia_ab_2001, separated_coords_Harmonia_ab_2001$year,
+                       function(x){
+                         Europa_Harmonia <- as.ppp(x)
+                         marks(Europa_Harmonia) <- NULL
+                         count_Europa_Harmonia <- quadratcount(Europa_Harmonia, nx= 10, ny= 5 )
+             
+                       })
+Q_count_Harmonia
+#einfach von einander abziehen klappt leider noch nicht
+
+Q_count_C7 - Q_count_Harmonia
+
+
+
+Europa_Harmonia  <- as.ppp(separated_coords_Harmonia)
+marks(Europa_Harmonia) <- NULL
+
+
+H <- quadratcount(Europa_Harmonia, nx= 6, ny=3)
+H
+
+#Plott von beiden aufeinander
+rbind(data.frame(separated_coord_Berlin_ab_2000, group="H. axyridis"), data.frame(separated_coord_Berlin_Coccinella, group="C7")) %>%
+  filter(year==2019) %>%
+  ggplot(aes(x=long,y=lat)) + 
+  stat_density2d( aes(color = group)) + 
+  # scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
+  theme_minimal() +
+  geom_point(aes(color = group, alpha=0.5))
+  
+#Plott von beiden aufeinander Berlin
+rbind(data.frame(separated_coord_Berlin_ab_2000, group="H. axyridis"), data.frame(separated_coord_Berlin_Coccinella, group="C7")) %>%
+  ggplot(aes(x=long,y=lat)) + 
+  stat_density2d( aes(color = group)) + 
+  # scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
+  theme_minimal() +
+  geom_point(aes(color = group, alpha=0.5))+
+  facet_wrap(~year)
+
+#Plott von beiden aufeinander
+rbind(data.frame(separated_coord_Bremen, group="H. axyridis"), data.frame(separated_coord_Bremen_Coccinella, group="C7")) %>%
+  ggplot(aes(x=long,y=lat)) + 
+  stat_density2d( aes(color = group)) + 
+  # scale_fill_manual(values=c("a"="#FF0000", "b"="#00FF00")) +
+  theme_minimal() +
+  geom_point(aes(color = group, alpha=0.5))+
+  facet_wrap(~year)
+
+
+
+
+#Differenz
+Q_count_C7[[20]] - Q_count_Harmonia[[20]]
+my_diff <- lapply(seq_along(Q_count_C7), function(i){
+ # diff <- as.data.frame(Q_count_C7[[i]] - Q_count_Harmonia[[i]])
+#  diff$year <- names(Q_count_C7)[i] 
+ # diff
+  Q_count_C7[[i]] - Q_count_Harmonia[[i]]
+})
+diff_pro_Jahr <- do.call(rbind, my_diff)
+my_diff
+#plot der Differenz 
+?quadratcount()
+
+my_diff[[20]]
+str(my_diff[[20]])
+rownames(my_diff[[20]])
+
+
+as_tibble(diff_pro_Jahr) %>%
+  filter(Freq != 0) %>%
+  transform(log_diff = log10(abs(Freq))) %>%
+  transform(log_diff = ifelse(Freq < 0, log_diff * (-1), log_diff)) %>%
+ggplot(aes(x=year, y=log_diff, group=paste(x,y))) +
+  geom_jitter() +
+  geom_line()
+ 
+ggplot(diff_pro_Jahr, aes(x=year, y=Freq)) +
+  geom_boxplot() 
+
+
+table()
+diff_pro_Jahr
+table(paste(diff_pro_Jahr$x, diff_pro_Jahr$y))
+
+#Erstellung der für alle gültigen grids
+filter_beide_Arten_2001<- readfile_selected2.2 %>%
+  filter(year > 2000)
+
+
+separated_coords_beide  <- filter_beide_Arten_2001 %>%
+  mutate(lat = unlist(map(filter_beide_Arten_2001$geometry,1)),
+         long = unlist(map(filter_beide_Arten_2001$geometry,2)))
+separated_coords_beide
+summary(separated_coords_beide)
+
+Europa_beide_ab_2001  <- as.ppp(separated_coords_beide)
+marks(Europa_beide_ab_2001) <- NULL
+
+
+Q_count_beide_Arten_ab_2001<- quadratcount(Europa_beide_ab_2001, nx=10, ny=5)
+Q_count_beide_Arten_ab_2001
+
+x_grid_beide <- colnames(Q_count_beide_Arten_ab_2001)
+y_grid_beide <- rownames(Q_count_beide_Arten_ab_2001)
+x_grid_beide
+y_grid_beide
+
+list_x_grid <- as.list(x_grid_beide)
+list_x_grid
+grids_Käfer <- list_x_grid[c(1:9)]
+
+add_grid <- "[27.9,34.1]"
+x_grid_beide_abgeändert <- c(grids_Käfer, add_grid)
+x_grid_beide_abgeändert <- as.character(x_grid_beide_abgeändert)
+
+x_grid_beide_abgeändert <- as.vector(x_grid_beide_abgeändert)
+class(x_grid_beide_abgeändert)
+summary(separated_coords_Harmonia_ab_2001)
+
+#Versuch beide in den grids zu plotten
+
+count_Europa_beide <- quadratcount(Europa_beide, xbreaks = x_grid_beide, ybreaks = y_grid_beide) by(separated_coords_beide, separated_coords_beide$year,
+                       function(x){
+                         Europa_beide <- as.ppp(x)
+                         marks(Europa_beide) <- NULL
+                         count_Europa_beide <- quadratcount(Europa_beide, xbreaks = x_grid_beide, ybreaks = y_grid_beide)
+                         
+                       })
+Q_count_beide
+
+my_quadrat_count <- function(x){
+  Europa_beide <- as.ppp(x)
+  marks(Europa_beide) <- NULL
+  count_Europa_beide <- quadratcount(Europa_beide, xbreaks = x_grid_richtig, ybreaks = y_grid_richtig)
+}
+
+
+my_quadrat_count(filter(Europa_beide_ab_2001, year=2018))
+
+summary(separated_coords_beide)
+
+Q_count_beide <- by(separated_coords_beide, separated_coords_beide$year,
+                    function(x){
+                      Europa_beide <- as.ppp(x)
+                      marks(Europa_beide) <- NULL
+                      count_Europa_beide <- quadratcount(Europa_beide, nx=10,ny=5)
+                      
+                    })
+
+Q_count_beide
+#versuch eine Spezies in den Grids zu plotten aber er gibt mir den Fehler, dass das Window nicht passt
+
+Q_count_Harmonia_in_grids_1 <- by(separated_coords_Harmonia_ab_2001, separated_coords_Harmonia_ab_2001$year,
+                                function(x){
+                                  Europa_Harmonia_in_grids_1 <- as.ppp(x)
+                                  marks(Europa_Harmonia_in_grids_1) <- NULL
+                                  count_Europa_Harmonia_in_grids_1 <- quadratcount(Europa_Harmonia_in_grids_1, xbreaks=x_grid_richtig, ybreaks=y_grid_richtig)
+                                  
+                                })
+Q_count_Harmonia_in_grids_1
+Q_count_Coccinella_in_grids_1 <- by(separated_coords_C7, separated_coords_C7$year,
+                                  function(x){
+                                    Europa_Coccinella_in_grids_1 <- as.ppp(x)
+                                    marks(Europa_Coccinella_in_grids_1) <- NULL
+                                    count_Europa_Coccinella_in_grids_1 <- quadratcount(Europa_Coccinella_in_grids_1, xbreaks=x_grid_richtig, ybreaks=y_grid_richtig)
+                                    
+                                  })
+Q_count_Coccinella_in_grids_1
+#Wenn ich die grids manuell festlege und das letzte größer mache passt es
+Q_count_Harmonia_in_grids <- by(separated_coords_Harmonia_ab_2001, separated_coords_Harmonia_ab_2001$year,
+                       function(x){
+                         Europa_Harmonia_in_grids <- as.ppp(x)
+                         marks(Europa_Harmonia_in_grids) <- NULL
+                         count_Europa_Harmonia_in_grids <- quadratcount(Europa_Harmonia_in_grids, xbreaks=c(-27.4, -21.2, -15.1, -8.94, -2.8, 3.33, 9.47, 15.6, 21.7, 27.9, 34.03), ybreaks=c(28.1, 36.1, 44.1, 52, 60, 68))
+                         
+                       })
+
+
+y_grid_beide
+summary(separated_coords_Harmonia_ab_2001)
+summary(separated_coords_beide)
+Q_count_Harmonia_in_grids
+
+Q_count_Coccinella_in_grids <- by(separated_coords_C7, separated_coords_C7$year,
+                                function(x){
+                                  Europa_Coccinella_in_grids <- as.ppp(x)
+                                  marks(Europa_Coccinella_in_grids) <- NULL
+                                  count_Europa_Coccinella_in_grids <- quadratcount(Europa_Coccinella_in_grids, xbreaks=c(-27.4, -21.2, -15.1, -8.94, -2.8, 3.33, 9.47, 15.6, 21.7, 27.9, 34.03), ybreaks=c(28.1, 36.1, 44.1, 52, 60, 70))
+                                  
+                                })
+Q_count_Coccinella_in_grids
+
+#Anteil C7 an allen C7 + Harmonia
+diff_C7_Harmonia <- lapply(seq_along(Q_count_Coccinella_in_grids_1), function(i){
+  # diff <- as.data.frame(Q_count_C7[[i]] - Q_count_Harmonia[[i]])
+  #  diff$year <- names(Q_count_C7)[i] 
+  # diff
+  Q_count_Coccinella_in_grids_1[[i]]/( Q_count_Coccinella_in_grids_1[[i]] + Q_count_Harmonia_in_grids_1[[i]])
+})
+
+diff_C7_Harmonia <- lapply(seq_along(Q_count_Coccinella_in_grids_1), function(i){
+   diff <- as.data.frame(Q_count_Coccinella_in_grids_1[[i]] - Q_count_Harmonia_in_grids_1[[i]])
+   diff$year <- names(Q_count_C7)[i] 
+  diff
+ 
+})
+
+diff_C7_Harmonia 
+diff_pro_Jahr_C7_Harmonia_1 <- do.call(rbind, diff_C7_Harmonia)
+diff_pro_Jahr_C7_Harmonia_1
+#übersichtlicher
+
+diff_C7_Harmonia_2 <- lapply(seq_along(Q_count_Coccinella_in_grids_1), function(i){
+  g <- Q_count_Coccinella_in_grids_1[[i]] + Q_count_Harmonia_in_grids_1[[i]]
+  diff <- as.data.frame(Q_count_Coccinella_in_grids_1[[i]]/g)
+   diff$year <- names(Q_count_Coccinella_in_grids)[i] 
+  diff$total <- as.vector(g)
+ diff$diff <- as.vector(Q_count_Coccinella_in_grids_1[[i]] - Q_count_Harmonia_in_grids_1[[i]])
+  diff
+})
+
+diff_pro_Jahr_C7_Harmonia <- do.call(rbind, diff_C7_Harmonia_2)
+diff_pro_Jahr_C7_Harmonia
+diff_C7_Harmonia_2[1]
+
+as_tibble(diff_pro_Jahr_C7_Harmonia_1) %>%
+  filter(Freq != 0) %>%
+  transform(log_diff = log10(abs(Freq))) %>%
+  transform(log_diff = ifelse(Freq < 0, log_diff * (-1), log_diff)) %>%
+  ggplot(aes(x=year, y=log_diff, group=paste(x,y))) +
+  geom_jitter() +
+  geom_line()
+
+
+diff_C7_Harmonia_2
+diff_C7_Harmonia_pro_Jahr <- do.call(rbind, diff_C7_Harmonia_2)
+diff_C7_Harmonia_pro_Jahr
+
+table(diff_C7_Harmonia_pro_Jahr$Freq)
+diff_C7_Harmonia_pro_Jahr_Freq <- diff_C7_Harmonia_pro_Jahr %>%
+  filter(Freq != 0) %>%
+  group_by(Freq)
+
+diff_C7_Harmonia_pro_Jahr_Freq
+
+
+library(vioplot)
+vioplot(diff_C7_Harmonia_pro_Jahr$Freq,
+        horizontal = TRUE)
+?vioplot
+
+as_tibble(diff_C7_Harmonia_pro_Jahr) %>%
+  filter(Freq != 0) %>%
+  transform(log_diff = log10(abs(Freq))) %>%
+  transform(log_diff = ifelse(Freq < 0, log_diff * (-1), log_diff)) %>%
+  ggplot(aes(x=year, y=log_diff, group=paste(x,y))) +
+  geom_jitter() +
+  geom_line()
+
+as_tibble(diff_C7_Harmonia_pro_Jahr) %>%
+  filter(Freq != 0) %>%
+  ggplot(aes(x=year, y=Freq, group=paste(x,y))) +
+  geom_jitter() +
+  geom_line()
+
+
+
+Europa_Harmonia_in_grids <- as.ppp(separated_coords_Harmonia_ab_2001)
+marks(Europa_Harmonia_in_grids) <- NULL
+count_Europa_Harmonia_in_grids <- quadratcount(Europa_Harmonia_in_grids, xbreaks=x_grid_beide, ybreaks=y_grid_beide)
+
+
+#Count für Deutschland
+
+readfile_selected3 <- readfile_selected2.1.1 %>%
+  filter(year>2000) %>%
+  filter(!is.na(decimalLongitude))%>%
+  filter(!is.na(decimalLatitude))%>%
+  filter(countryCode=="DE")
+readfile_selected3
+
+readfile_selected3.1 <- readfile_selected3 %>% 
+  as.data.frame %>% 
+  sf::st_as_sf(coords = c(2,3))
+readfile_selected3.1
+
+separated_coords_Deutschland_beide  <- readfile_selected3 %>%
+  mutate(lat = unlist(map(readfile_selected3$geometry,1)),
+         long = unlist(map(readfile_selected3$geometry,2)))
+separated_coords_Deutschland_beide
+
+
+Deutschland_beide_ab_2001  <- as.ppp(separated_coords_Deutschland_beide)
+marks(Deutschland_beide_ab_2001) <- NULL
+
+
+Q_count_beide_Arten_ab_2001<- quadratcount(Europa_beide_ab_2001, nx= 100, ny=50)
+Q_count_beide_Arten_ab_2001
+
+x_grid_beide <- rownames(Q_count_beide_Arten_ab_2001)
+y_grid_beide <- colnames(Q_count_beide_Arten_ab_2001)
+
+
+summary(separated_coords_Europa)
+
+#load the dataset
+#put the coords in meters
+separated_coords_Europa$X <- separated_coords_Europa$lat/100
+separated_coords_Europa$Y <- separated_coords_Europa$long/100
+
+#creating the point pattern
+(all_pp <- ppp(separated_coords_Europa[,"X"],separated_coords_Europa[,"Y"],owin(c(-28,35),c(28,68))))
+readfile_selected
+
+
+
+
+#Versuch einen Vektor für die Coordinaten zu generieren
+x=c()
+x[1] = -27.4
+for(i in 2:11) {
+  x[i]=6.2+x[i-1]
+}
+x
+as.numeric(x)
+class(x)
+
+#Density Berlin beide
+points_within_Berlin_ab_2001_beide <- readfile_selected3.1[st_within(readfile_selected3.1, buffer_sf, sparse = F), ]
+points_within_Berlin_ab_2001_beide 
+separated_coords_Berlin_beide  <- points_within_Berlin_ab_2000_beide %>%
+  mutate(lat = unlist(map(points_within_Berlin_ab_2000_beide$geometry,1)),
+         long = unlist(map(points_within_Berlin_ab_2000_beide$geometry,2)))
+separated_coords_Berlin_beide
+
+Berlin_beide_ab_2001  <- as.ppp(separated_coords_Berlin_beide)
+marks(Berlin_beide_ab_2001) <- NULL
+
+
+Q_count_beide_Arten_ab_2001_Berlin<- quadratcount(Berlin_beide_ab_2001, nx=10, ny=5)
+Q_count_beide_Arten_ab_2001_Berlin
+
+Filter_Harmonia_ab_2001_Berlin <- points_within_Berlin_ab_2000_beide %>%
+  filter(species == "Harmonia axyridis") %>%
+  filter(year > 2000)
+Filter_Harmonia_ab_2001_Berlin
+separated_coords_Harmonia_ab_2001_Berlin  <- Filter_Harmonia_ab_2001_Berlin %>%
+  mutate(lat = unlist(map(Filter_Harmonia_ab_2001_Berlin$geometry,1)),
+         long = unlist(map(Filter_Harmonia_ab_2001_Berlin$geometry,2)))
+separated_coords_Harmonia_ab_2001_Berlin
+
+
+Q_count_Harmonia_in_grids_Berlin <- by(separated_coords_Harmonia_ab_2001_Berlin, separated_coords_Harmonia_ab_2001_Berlin$year,
+                                  function(x){
+                                    Berlin_Harmonia_in_grids <- as.ppp(x)
+                                    marks(Berlin_Harmonia_in_grids) <- NULL
+                                    count_Berlin_Harmonia_in_grids <- quadratcount(Berlin_Harmonia_in_grids, xbreaks=c(13.20, 13.25, 13.28, 13.32, 13.36, 13.4,13.44,13.48, 13.6),ybreaks=c(52.0, 52.41, 52.49, 52.56, 52.64, 52.9))
+                                                                            
+                                    
+                                  })
+Q_count_Harmonia_in_grids_Berlin
+
+Filter_C7_ab_2001_Berlin <- points_within_Berlin_ab_2000_beide %>%
+  filter(species == "Coccinella septempunctata") %>%
+  filter(year > 2000)
+Filter_C7_ab_2001_Berlin
+separated_coords_C7_ab_2001_Berlin  <- Filter_C7_ab_2001_Berlin %>%
+  mutate(lat = unlist(map(Filter_C7_ab_2001_Berlin$geometry,1)),
+         long = unlist(map(Filter_C7_ab_2001_Berlin$geometry,2)))
+separated_coords_C7_ab_2001_Berlin
+
+
+Q_count_C7_in_grids_Berlin <- by(separated_coords_C7_ab_2001_Berlin, separated_coords_C7_ab_2001_Berlin$year,
+                                       function(x){
+                                         Berlin_C7_in_grids <- as.ppp(x)
+                                         marks(Berlin_C7_in_grids) <- NULL
+                                         count_Berlin_C7_in_grids <- quadratcount(Berlin_C7_in_grids, xbreaks=c(13.20, 13.25, 13.28, 13.32, 13.36, 13.4,13.44,13.48, 13.6),ybreaks=c(52.0, 52.41, 52.49, 52.56, 52.64, 52.9))
+                                         
+                                         
+                                       })
+Q_count_C7_in_grids_Berlin
+
+Q_count_Harmonia_in_grids_Berlin
+
+#funktioniert nicht, weil wenn es für Jahre keine Daten gibt für das andere aber schon, kann es nicht voneinander abgezogen werdena.frame(Q_count_C7[[i]] - Q_count_Harmonia[[i]])
+diff_C7_Harmonia_Berlin_1 <- lapply(seq_along(Q_count_C7_in_grids_Berlin), function(i){
+#  diff$year <- names(Q_count_C7)[i] 
+  # diff
+  Q_count_C7_in_grids_Berlin[[i]] - Q_count_Harmonia_in_grids_Berlin[[i]]
+})
+
+diff_C7_Harmonia_Berlin
+
+#übersichtlicher
+
+diff_C7_Harmonia_Berlin <- lapply(seq_along(Q_count_C7_in_grids_Berlin), function(i){
+  diff <- as.data.frame(Q_count_C7_in_grids_Berlin[[i]] - Q_count_Harmonia_in_grids_Berlin[[i]])
+  diff$year <- names( Q_count_C7_in_grids_Berlin)[i] 
+  diff
+  
+})
+
+
+
+diff_C7_Harmonia_2
+diff_C7_Harmonia_pro_Jahr <- do.call(rbind, diff_C7_Harmonia_2)
+diff_C7_Harmonia_pro_Jahr
+
+
+#numerischer Vektor x_grid
+
+x_grid_beide_1 <- gsub("\\[|\\)|\\]", "", x_grid_beide)
+x_grid_richtig <- as.numeric(unique(unlist(strsplit(x_grid_beide_1, ","))))
+
+y_grid_beide_1 <- gsub("\\[|\\)|\\]", "", y_grid_beide)
+y_grid_richtig <- sort(as.numeric(unique(unlist(strsplit(y_grid_beide_1, ",")))))
+x_grid_richtig[x_grid_richtig == max(x_grid_richtig)] <- x_grid_richtig[x_grid_richtig == max(x_grid_richtig)] + 0.5
+x_grid_richtig
