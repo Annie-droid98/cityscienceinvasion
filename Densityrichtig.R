@@ -1404,10 +1404,7 @@ library(jsonlite)
 library(ggmap)
 Berlin <- c(lon = 52.5200, lat = 13.4050)
 Berlin_map <- get_map(location = Berlin)
-register_google(key = "AIzaSyBH9ZncAfoSpsIbfLeL5Xbf9U0kkMY8zo8", write = TRUE)
 
-
-AIzaSyDby8bdbN4Jt85W5bQrFnjJXNtsO1_YFrU
 # Library
 library(ggmap)
 
