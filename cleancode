@@ -1,0 +1,471 @@
+install.packages("rgbif")
+install.packages("sf")
+install.packages("dplyr")
+install.packages("sp")
+install.packages("wellknown")
+install.packages("ggplot2")
+install.packages("ggmap")
+install.packages("MASS")
+install.packages("pscl")
+install.packages("car")
+install.packages("spaMM")
+install.packages("lmtest")
+install.packages("units")
+library(units)
+require(lmtest)
+library(spaMM)
+library(car)
+library(pscl)
+library(MASS)
+library(ggmap)
+library(ggplot2)
+library(wellknown)
+library(rgbif)
+library(dplyr)
+library(sf)
+library(leaflet)
+library(maps)
+library(rgeos)
+library(tidyverse)
+library(maptools)
+library(raster)
+library(sf)
+install.packages("spatstat")
+library(spatstat)
+library(rgdal)
+library(broom)
+
+#Einlesen der Tabelle
+getwd()
+setwd("C:/Users/User/Documents/Bachelorarbeit/BachelorarbeitMarienkäfer/DataDeutschlandH+C")
+getwd()
+readfile <- read.delim("Marienkäfer Welt.csv", sep = "\t", quote = "#")
+readfile
+
+readfile_selected <- readfile %>%
+  dplyr::select(species, decimalLongitude, decimalLatitude, countryCode,
+                gbifID, family, taxonRank, coordinateUncertaintyInMeters, year,
+                basisOfRecord, institutionCode)
+
+#Filter nach den Jahren ab 2000
+readfile_selected2.1.1 <- data.frame(readfile_selected)
+
+#Filter der EU Länder (einige fehlen noch)
+EU_Länder <-  list("DE","BE", "BG", "CZ", "DK", "EE", "IE", "EL", "ES", "FR", "HR", "IT", "CY", "LV", "LT", "LU","HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE") 
+readfile_selected2.1 <- readfile_selected2.1.1 %>%
+  filter(year>1999) %>%
+  filter(countryCode %in% EU_Länder)
+
+readfile_selected2.2 <- readfile_selected2.1 %>% 
+  as.data.frame %>% 
+  sf::st_as_sf(coords = c(2,3))
+readfile_selected2.2
+Mittelpunkte_der_Städte_Liste <- list(c(52.5200,13.4050),c(53.5511,9.9937),c(48.1351,11.5820),c(50.9375,6.9603),c(50.1109,8.6821),c(48.7758,9.1829),c(51.2277,6.7735),
+     c(51.3397,12.3731),c(51.5136,7.4653),c(51.4556,7.0116),c(53.0793,8.8017),c(51.0504,13.7373),c(52.3759,9.7320),c(49.4521,11.0767))
+
+
+
+
+#Funktion um alle Buffer zu erstellen muss aber hier noch auf einen Radius in km/m umstellen
+Buffer_für_die_Städte <- lapply((Mittelpunkte_der_Städte_Liste), function(i){
+  example_points <- data.frame(lat=numeric(), long= numeric())
+  example_points[1,] <- c(i)
+  coordinates(example_points) <- ~long + lat
+  example_pointssf <- as(example_points, "sf")
+  buffer_sf <- st_buffer(example_pointssf,  dist = 0.2, endCapStyle="ROUND")
+  
+})
+
+#Versuch Buffer in KM zu setzen
+
+Ber_long <- 52.5200
+Ber_lat <- 13.4050
+
+Berlin <- st_point(x = c(Ber_lat, Ber_long), dim = "XY")
+Berlin <- Berlin %>% st_sfc(crs = 4326)
+r10km <- set_units(10, km)
+#Berlin <- st_transform(Berlin, 29902)
+
+#Umformen in Wgt (Koordinaten)
+Berlin <- st_transform(Berlin, 4326)
+Berlin_Buffer <- st_buffer(Berlin, r10km)
+
+
+
+mapBerlin_Buffer <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addPolygons(data=Berlin_Buffer)
+mapBerlin_Buffer
+
+#Plot um zu schauen ob es funktioniert hat
+Buffer_für_die_Städte[[1]]%>%
+  leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addPolygons(data=Buffer_für_die_Städte[[1]])
+
+#Funktion um die Beobachtungen in den Buffern zu erfassen + später plotten der density
+Versuch_Funktion_Buffer <- lapply((Buffer_für_die_Städte), function(i) {
+  points_within_the_Buffers <- readfile_selected2.2[st_within( readfile_selected2.2, i, sparse = F), ]
+  points_within_the_Buffers %>%
+    mutate(lat = unlist(map(points_within_the_Buffers$geometry,1)),
+           long = unlist(map(points_within_the_Buffers$geometry,2)))
+})
+Versuch_Funktion_Buffer[[2]]
+
+
+
+#Filter für C7 Beobachtungen
+Filter_C7_separated_coords <- readfile_selected2.2 %>%
+  filter(species == "Coccinella septempunctata") %>%
+  filter(year> 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2)))
+  
+Filter_C7_separated_coords
+
+
+#Filter Harmoniabeobachtungen +Separierung Coordinaten
+
+Filter_Harmonia_ab_2001 <- readfile_selected2.2 %>%
+  filter(species == "Harmonia axyridis") %>%
+  filter(year > 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2)))
+  
+Filter_Harmonia_ab_2001
+
+#Erstellung der für alle gültigen grids
+
+separated_coords_beide <- readfile_selected2.2 %>%
+  filter(year > 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2)))
+separated_coords_beide
+
+Europa_beide_ab_2001  <- as.ppp(separated_coords_beide)
+marks(Europa_beide_ab_2001) <- NULL
+
+
+Q_count_beide_Arten_ab_2001<- quadratcount(Europa_beide_ab_2001, nx=100, ny=100)
+Q_count_beide_Arten_ab_2001
+
+filter_beide_Arten_2001<- readfile_selected2.2 %>%
+  filter(year > 2000)
+
+#Erstellung der allgemeinen Grids ordentlicher !
+grids_allgemein <- readfile_selected2.2 %>%
+  filter(year > 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2))) %>%
+  as.ppp()%>%
+quadratcount(nx=10, ny=10)
+
+grids_allgemein  
+
+
+x_grid_beide <- colnames(grids_allgemein)
+y_grid_beide <- rownames(grids_allgemein)
+
+#Anpassen um sie als grids in der Funktion verwenden zu können 
+
+x_grid_beide_1 <- gsub("\\[|\\)|\\]", "", x_grid_beide)
+x_grid_richtig <- as.numeric(unique(unlist(strsplit(x_grid_beide_1, ","))))
+
+y_grid_beide_1 <- gsub("\\[|\\)|\\]", "", y_grid_beide)
+y_grid_richtig <- sort(as.numeric(unique(unlist(strsplit(y_grid_beide_1, ",")))))
+x_grid_richtig[x_grid_richtig == max(x_grid_richtig)] <- x_grid_richtig[x_grid_richtig == max(x_grid_richtig)] + 0.5
+x_grid_richtig
+y_grid_richtig
+
+#Q_count für die beiden Arten mit denselben Grids
+
+Q_count_Harmonia_in_grids_1 <- by(Filter_Harmonia_ab_2001, Filter_Harmonia_ab_2001$year,
+                                  function(x){
+                                    Europa_Harmonia_in_grids_1 <- as.ppp(x)
+                                    marks(Europa_Harmonia_in_grids_1) <- NULL
+                                    count_Europa_Harmonia_in_grids_1 <- quadratcount(Europa_Harmonia_in_grids_1, xbreaks=x_grid_richtig, ybreaks=y_grid_richtig)
+                                    
+                                  })
+Q_count_Harmonia_in_grids_1
+Q_count_Coccinella_in_grids_1 <- by(Filter_C7_separated_coords, Filter_C7_separated_coords$year,
+                                    function(x){
+                                      Europa_Coccinella_in_grids_1 <- as.ppp(x)
+                                      marks(Europa_Coccinella_in_grids_1) <- NULL
+                                      count_Europa_Coccinella_in_grids_1 <- quadratcount(Europa_Coccinella_in_grids_1, xbreaks=x_grid_richtig, ybreaks=y_grid_richtig)
+                                      
+                                    })
+Q_count_Coccinella_in_grids_1
+
+
+# Funktion um die Differenz, total zu erhalten
+
+diff_C7_Harmonia_2 <- lapply(seq_along(Q_count_Coccinella_in_grids_1), function(i){
+  g <- Q_count_Coccinella_in_grids_1[[i]] + Q_count_Harmonia_in_grids_1[[i]]
+  f <- Q_count_Coccinella_in_grids_1[[i]]
+  h <- Q_count_Harmonia_in_grids_1[[i]]
+  diff <- as.data.frame(Q_count_Coccinella_in_grids_1[[i]]/g)
+  diff$year <- names(Q_count_Coccinella_in_grids_1)[i]
+  diff$numericyear <- as.numeric(diff$year)
+  diff$total <- as.vector(g)
+  diff$diff <- as.vector(Q_count_Coccinella_in_grids_1[[i]] - Q_count_Harmonia_in_grids_1[[i]])
+  diff$C7 <- as.vector(f)
+  diff$Harmonia <-  as.vector(h)
+  diff
+})
+
+#als DF + ohne NAN
+df_pro_Jahr_C7_Harmonia_without_NAN <- do.call(rbind.data.frame, diff_C7_Harmonia_2)%>%
+  filter(! is.na(Freq))
+df_pro_Jahr_C7_Harmonia_without_NAN
+
+
+
+
+
+
+summary(diff_pro_Jahr_C7_Harmonia_without_NaN_df)
+
+#GLM
+
+  summary(glm.nb(formula = C7 ~ total + I(as.numeric(year)-2001) + Harmonia, data = df_pro_Jahr_C7_Harmonia_without_NAN))
+  
+  summary(glm.nb(formula = C7 ~ total + (year) + Harmonia, data = df_pro_Jahr_C7_Harmonia_without_NAN))
+  
+  #Versuch mit Zero inflated aber hier stimmt was noch nicht
+ zeroinfl_glm <- zeroinfl(formula = C7 ~ total + (year) + Harmonia| total + (year) + Harmonia,
+                          dist = 'negbin',
+                          data = df_pro_Jahr_C7_Harmonia)
+ colnames(df_pro_Jahr_C7_Harmonia)
+ summary(zeroinfl_glm)
+ 
+ #mit Transformation 
+ 
+ zeroinfl_glm_2 <- zeroinfl(formula = C7 ~  log(1 + total) + I(as.numeric(year)-2001) + log(1 + Harmonia),
+                          dist = 'negbin',
+                          data = subset(diff_pro_Jahr_C7_Harmonia_without_NaN_df, Harmonia>0))
+ 
+ #quantitativer Einfluss von Harmonia
+ glm_2.0 <- glm.nb(formula = C7 ~   + log(1 +total)* log(1+Harmonia) + year,
+                   data = subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+ 
+ summary(glm_2.0)
+ #ohne Jahre
+ glm_2.0.1 <- glm.nb(formula = C7 ~  log(1 +total)* log(1+Harmonia),
+                   data = subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+ summary(glm_2.0.1)
+ anova(glm_2.0, glm_2.0.1)
+ lrtest(glm_2.0, glm_2.0.1)
+ 
+ summary(df_pro_Jahr_C7_Harmonia_without_NAN)
+ nrow( subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+ 
+glm_2 <- glm.nb(formula = C7 ~  log(1 + total) + I(as.numeric(year)-2001)+ log(1 + Harmonia),
+                            data = subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+summary(glm_2)
+
+glm_2.1 <- glm.nb(formula = C7 ~   + log(1 +total) + I(as.numeric(year)-2001),
+                data = subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+
+anova(glm_2, glm_2.1, test = "LRT")
+#Likel hood ratio test
+lrtest(glm_2, glm_2.1)
+
+#Einfluss Vorhandensein von Harmonia
+
+glm_3 <- glm.nb(formula = C7 ~  log(1 + total) + I(as.numeric(year)-2001) + I(Harmonia>0),
+                data = (df_pro_Jahr_C7_Harmonia_without_NAN))
+ summary(glm_3)
+ 
+
+  
+#plotten Frequenz
+ggplot(diff_pro_Jahr_C7_Harmonia_without_NaN_df, aes(x=year, y=Freq)) +
+  geom_point() +
+  facet_wrap(~year)
+ggplot(diff_pro_Jahr_C7_Harmonia_without_NaN_df, aes(x=as.numeric(year), y=Freq)) +
+  geom_jitter()+
+  stat_smooth()
+
+#plotten diff C7/Harmonia
+ggplot(diff_pro_Jahr_C7_Harmonia_without_NaN_df, aes(x=year, y=diff)) +
+  geom_point() +
+  facet_wrap(~year)
+
+#beste Grafik!
+ggplot(diff_pro_Jahr_C7_Harmonia_without_NaN_df, aes(x=as.numeric(year), y=diff)) +
+  geom_jitter()+
+  stat_smooth()
+#Diff mit log Transformation  der y Achse
+as_tibble(diff_pro_Jahr_C7_Harmonia_without_NaN_df) %>%
+  filter(total != 0) %>%
+  transform(log_diff = log10(abs(diff))) %>%
+  transform(log_diff = ifelse(diff < 0, log_diff * (-1), log_diff)) %>%
+  ggplot(aes(x=year, y=log_diff, group=paste(x,y))) +
+  geom_jitter() +
+  geom_line()
+
+#plotten der Hintergund map um die grids zu visualisieren
+us <- c(left = -30, bottom = 20, right = 60, top = 75)
+map_europa <- get_stamenmap(us, zoom = 2, maptype = "toner-lite") %>% ggmap() 
+#map mit grids
+map_europa + geom_hline(yintercept = y_grid_richtig) + geom_vline(xintercept = x_grid_richtig)
+
+
+
+# FUnktion um über verschiedene Anzahlen an grids zu loopen
+#ist noch sehr sperrig und muss noch runtergebrochen werden
+function_Veränderung_grids_1 <- lapply(c(10,20,30,40,50,60,70,80,90,100,200,300), function(i) 
+  {Europa_beide_Käfer_in_grids_1 <- as.ppp(separated_coords_beide)
+marks(Europa_beide_Käfer_in_grids_1) <- NULL
+count_Europa_beide_Käfer_in_grids_1 <- quadratcount(Europa_beide_Käfer_in_grids_1, nx=i, ny=i)
+x_grid_beide_experiment <- colnames(count_Europa_beide_Käfer_in_grids_1)
+
+y_grid_beide_experiment <- rownames(count_Europa_beide_Käfer_in_grids_1)
+
+x_grid_beide_ex_1 <- gsub("\\[|\\)|\\]", "", x_grid_beide_experiment)
+x_grid_richtig_ex_1 <- as.numeric(unique(unlist(strsplit(x_grid_beide_ex_1, ","))))
+x_grid_richtig_ex_1[x_grid_richtig_ex_1 == max(x_grid_richtig_ex_1)] <- x_grid_richtig_ex_1[x_grid_richtig_ex_1 == max(x_grid_richtig_ex_1)] + 0.5
+
+y_grid_beide_ex_1 <- gsub("\\[|\\)|\\]", "", y_grid_beide_experiment)
+y_grid_richtig_ex_1 <- sort(as.numeric(unique(unlist(strsplit(y_grid_beide_ex_1, ",")))))
+
+Q_count_Coccinella_in_grids_1 <- by(Filter_C7_separated_coords, Filter_C7_separated_coords$year,
+                                    function(x){
+                                      Europa_Coccinella_in_grids_1 <- as.ppp(x)
+                                      marks(Europa_Coccinella_in_grids_1) <- NULL
+                                      count_Europa_Coccinella_in_grids_1 <- quadratcount(Europa_Coccinella_in_grids_1, xbreaks=x_grid_richtig_ex_1, ybreaks=y_grid_richtig_ex_1)
+                                      
+                                    })
+
+Q_count_Harmonia_in_grids_1 <- by(Filter_Harmonia_ab_2001, Filter_Harmonia_ab_2001$year,
+                                  function(x){
+                                    Europa_Harmonia_in_grids_1 <- as.ppp(x)
+                                    marks(Europa_Harmonia_in_grids_1) <- NULL
+                                    count_Europa_Harmonia_in_grids_1 <- quadratcount(Europa_Harmonia_in_grids_1, xbreaks=x_grid_richtig_ex_1, ybreaks=y_grid_richtig_ex_1)
+                                    
+                                  })
+diff_C7_Harmonia_2 <- lapply(seq_along(Q_count_Coccinella_in_grids_1), function(i){
+  g <- Q_count_Coccinella_in_grids_1[[i]] + Q_count_Harmonia_in_grids_1[[i]]
+  f <- Q_count_Coccinella_in_grids_1[[i]]
+  h <- Q_count_Harmonia_in_grids_1[[i]]
+  diff <- as.data.frame(Q_count_Coccinella_in_grids_1[[i]]/g)
+  diff$year <- names(Q_count_Coccinella_in_grids_1)[i]
+  diff$numericyear <- as.numeric(diff$year)
+  diff$total <- as.vector(g)
+  diff$diff <- as.vector(Q_count_Coccinella_in_grids_1[[i]] - Q_count_Harmonia_in_grids_1[[i]])
+  diff$C7 <- as.vector(f)
+  diff$Harmonia <-  as.vector(h)
+  diff
+})
+})
+
+function_Veränderung_grids_1 
+Veränderung_in_verschiedenen_grids <- do.call(rbind, function_Veränderung_grids_1 )
+  df_verschiedene_grids <- do.call(rbind.data.frame, Veränderung_in_verschiedenen_grids)
+  df_verschiedene_grids
+
+
+#herausfiltern der NAN
+df_verschiedene_grids_without_NaN <- df_verschiedene_grids %>%
+  filter(! is.na(x)) %>%
+  filter(! is.na(y)) %>%
+  filter(! is.na(Freq))
+
+df_verschiedene_grids_without_NaN
+
+
+#GLM für 30*30 grids
+#  glm.nb(formula = C7 ~ total + year + Harmonia, data = df_verschiedene_grids_without_NaN)
+
+df_30mal30_grids_ohne_NAN <- do.call(rbind.data.frame, function_Veränderung_grids_1[[3]])%>%
+  filter(! is.na(x)) %>%
+  filter(! is.na(y)) %>%
+  filter(! is.na(Freq))
+df_30mal30_grids_ohne_NAN
+
+glm_30_30 <- glm.nb(formula = C7 ~   + log(1 +total)* log(1+Harmonia) + year,
+                  data = subset(df_30mal30_grids_ohne_NAN, Harmonia>0))
+summary(glm_30_30)
+#ohne Jahre
+glm_30_30_2.0.1 <- glm.nb(formula = C7 ~  log(1 +total)* log(1+Harmonia),
+                    data = subset(df_30mal30_grids_ohne_NAN, Harmonia>0))
+summary(glm_30_30_2.0.1)
+
+
+#GLM für 100*100 grids auch hier ist Grenze der Alternierungen schon erreicht
+
+df_100mal100_grids_ohne_NAN <- do.call(rbind.data.frame, function_Veränderung_grids_1[[10]])%>%
+  filter(! is.na(x)) %>%
+  filter(! is.na(y)) %>%
+  filter(! is.na(Freq))
+df_100mal100_grids_ohne_NAN
+
+glm_100_100 <- glm.nb(formula = C7 ~   + log(1 +total)* log(1+Harmonia) + year,
+                    data = subset(df_100mal100_grids_ohne_NAN, Harmonia>0))
+summary(glm_100_100)
+#ohne Jahre
+glm_30_30_2.0.1 <- glm.nb(formula = C7 ~  log(1 +total)* log(1+Harmonia),
+                          data = subset(df_30mal30_grids_ohne_NAN, Harmonia>0))
+summary(glm_30_30_2.0.1)
+#GLM für 300*300 grids
+
+df_300mal300_grids_ohne_NAN <- do.call(rbind.data.frame, function_Veränderung_grids_1[[12]])%>%
+  #filter(! is.na(x)) %>%
+  #filter(! is.na(y)) %>%
+  filter(! is.na(Freq))
+df_300mal300_grids_ohne_NAN 
+#ohne Jahre
+glm_300_300_2.0.1 <- glm.nb(formula = C7 ~  log(1 +total)* log(1+Harmonia),
+                          data = subset(df_300mal300_grids_ohne_NAN , Harmonia>0))
+
+summary(glm_300_300_2.0.1 )
+
+glm_300_300_2.0 <- glm.nb(formula = C7 ~   + log(1 +total)* log(1+Harmonia) + year,
+                          data = subset(df_300mal300_grids_ohne_NAN, Harmonia>0))
+summary(glm_300_300_2.0)
+
+glm_300_300_3 <- glm.nb(formula = C7 ~  log(1 + total) + I(as.numeric(year)-2001)+ log(1 + Harmonia),
+                data = subset(df_300mal300_grids_ohne_NAN, Harmonia>0))
+summary(glm_300_300_3)
+
+#gibt als einzige nicht den Fehler aus, dass die Grenze der Alternierung erreicht ist, 
+#wahrscheinlich weil Harmonia fehlen und dort zu viele sind
+glm_300_300_3.1 <- glm.nb(formula = C7 ~   + log(1 +total) + I(as.numeric(year)-2001),
+                  data = subset(df_pro_Jahr_C7_Harmonia_without_NAN, Harmonia>0))
+
+summary(glm_300_300_3.1)
+
+
+
+#Versuch Erstellung der grids in einem in meter transformierten CRS
+Filter_C7_WGS_84 <- st_set_crs(Filter_C7_separated_coords, 4326)
+Filter_C7_EPSG_5643 <- st_transform(Filter_C7_WGS_84, 5643)
+Filter_Harmonia_WGS_84 <- st_set_crs(Filter_Harmonia_ab_2001, 4326)
+Filter_Harmonia_EPSG_5643 <- st_transform(Filter_Harmonia_WGS_84, 5643)
+Filter_Harmonia_EPSG_5643
+
+grids_allgemein_transformiert <- readfile_selected2.2 %>%
+  filter(year > 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2))) %>%
+  st_set_crs(4326)%>%
+  st_transform(5643)%>%
+  as.ppp()%>%
+  quadratcount(nx=10, ny=10)
+
+grids_allgemein_transformiert
+
+
+x_grid_beide_transformiert <- colnames(grids_allgemein_transformiert)
+y_grid_beide_transformiert <- rownames(grids_allgemein_transformiert)
+
+#Anpassen um sie als grids in der Funktion verwenden zu können Funktion läuft noch nicht (Fehlermeldung)
+
+x_grid_beide_1_transformiert <- gsub("\\[|\\)|\\]", "", x_grid_beide_transformiert)
+x_grid_richtig_transformiert <- as.numeric(unique(unlist(strsplit(x_grid_beide_1_transformiert, ","))))
+
+y_grid_beide_1_transformiert <- gsub("\\[|\\)|\\]", "", y_grid_beide_transformiert)
+y_grid_richtig_transformiert <- sort(as.numeric(unique(unlist(strsplit(y_grid_beide_1_transformiert, ",")))))
+x_grid_richtig_transformiert[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] <- x_grid_richtig[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] + 1000
+x_grid_richtig_transformiert
+y_grid_richtig_transformiert
