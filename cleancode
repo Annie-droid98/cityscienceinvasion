@@ -438,8 +438,22 @@ summary(glm_300_300_3.1)
 
 
 #Versuch Erstellung der grids in einem in meter transformierten CRS
-Filter_C7_WGS_84 <- st_set_crs(Filter_C7_separated_coords, 4326)
-Filter_C7_EPSG_5643 <- st_transform(Filter_C7_WGS_84, 5643)
+Filter_C7_separated_coords_2001 <- readfile_selected2.2 %>%
+  filter(species == "Coccinella septempunctata") %>%
+  filter(year> 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2)))%>%
+  st_set_crs(4326)%>%
+  st_transform(5643)
+
+Filter_Harmonia_separated_coords_2001 <- readfile_selected2.2 %>%
+  filter(species == "Harmonia axyridis") %>%
+  filter(year> 2000)%>%
+  mutate(lat = unlist(map(geometry,1)),
+         long = unlist(map(geometry,2)))%>%
+  st_set_crs(4326)%>%
+  st_transform(5643)
+
 Filter_Harmonia_WGS_84 <- st_set_crs(Filter_Harmonia_ab_2001, 4326)
 Filter_Harmonia_EPSG_5643 <- st_transform(Filter_Harmonia_WGS_84, 5643)
 Filter_Harmonia_EPSG_5643
@@ -458,14 +472,66 @@ grids_allgemein_transformiert
 
 x_grid_beide_transformiert <- colnames(grids_allgemein_transformiert)
 y_grid_beide_transformiert <- rownames(grids_allgemein_transformiert)
-
-#Anpassen um sie als grids in der Funktion verwenden zu können Funktion läuft noch nicht (Fehlermeldung)
+x_grid_beide_transformiert
+y_grid_beide_transformiert
+summary(Filter_Harmonia_separated_coords_2015)
+#Anpassen um sie als grids in der Funktion verwenden zu können 
 
 x_grid_beide_1_transformiert <- gsub("\\[|\\)|\\]", "", x_grid_beide_transformiert)
 x_grid_richtig_transformiert <- as.numeric(unique(unlist(strsplit(x_grid_beide_1_transformiert, ","))))
 
 y_grid_beide_1_transformiert <- gsub("\\[|\\)|\\]", "", y_grid_beide_transformiert)
 y_grid_richtig_transformiert <- sort(as.numeric(unique(unlist(strsplit(y_grid_beide_1_transformiert, ",")))))
-x_grid_richtig_transformiert[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] <- x_grid_richtig[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] + 1000
+
+#auf max und min etwas drauf gepackt
+x_grid_richtig_transformiert[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] <- x_grid_richtig_transformiert[x_grid_richtig_transformiert == max(x_grid_richtig_transformiert)] + 100000
+x_grid_richtig_transformiert[x_grid_richtig_transformiert == min(x_grid_richtig_transformiert)] <- x_grid_richtig_transformiert[x_grid_richtig_transformiert == min(x_grid_richtig_transformiert)] - 100000
+
+#auf min etwas draufgepackt damit es die Koordinaten umspannt
+y_grid_richtig_transformiert[y_grid_richtig_transformiert == min(y_grid_richtig_transformiert)] <- y_grid_richtig_transformiert[y_grid_richtig_transformiert == min(y_grid_richtig_transformiert)] - 600000
 x_grid_richtig_transformiert
 y_grid_richtig_transformiert
+
+
+#Q_count für die beiden Arten mit denselben Grids
+
+Q_count_Harmonia_in_grids_1_transformiert <- by(Filter_Harmonia_separated_coords_2001, Filter_Harmonia_separated_coords_2001$year,
+                                  function(x){
+                                    Europa_Harmonia_in_grids_1 <- as.ppp(x)
+                                    marks(Europa_Harmonia_in_grids_1) <- NULL
+                                    count_Europa_Harmonia_in_grids_1 <- quadratcount(Europa_Harmonia_in_grids_1, xbreaks=x_grid_richtig_transformiert, ybreaks=y_grid_richtig_transformiert)
+                                    
+                                  })
+
+Q_count_Harmonia_in_grids_1_transformiert
+
+Q_count_Coccinella_in_grids_1_transformiert <- by(Filter_C7_separated_coords_2001, Filter_C7_separated_coords_2001$year,
+                                    function(x){
+                                      Europa_Coccinella_in_grids_1 <- as.ppp(x)
+                                      marks(Europa_Coccinella_in_grids_1) <- NULL
+                                      count_Europa_Coccinella_in_grids_1 <- quadratcount(Europa_Coccinella_in_grids_1, xbreaks=x_grid_richtig_transformiert, ybreaks=y_grid_richtig_transformiert)
+                                      
+                                    })
+
+Q_count_Coccinella_in_grids_1_transformiert
+
+# Funktion um die Differenz, total zu erhalten
+
+diff_C7_Harmonia_transformiert <- lapply(seq_along(Q_count_Coccinella_in_grids_1_transformiert), function(i){
+  g <- Q_count_Coccinella_in_grids_1_transformiert[[i]] + Q_count_Harmonia_in_grids_1_transformiert[[i]]
+  f <- Q_count_Coccinella_in_grids_1_transformiert[[i]]
+  h <- Q_count_Harmonia_in_grids_1_transformiert[[i]]
+  diff <- as.data.frame(Q_count_Coccinella_in_grids_1_transformiert[[i]]/g)
+  diff$year <- names(Q_count_Coccinella_in_grids_1_transformiert)[i]
+  diff$numericyear <- as.numeric(diff$year)
+  diff$total <- as.vector(g)
+  diff$diff <- as.vector(Q_count_Coccinella_in_grids_1_transformiert[[i]] - Q_count_Harmonia_in_grids_1_transformiert[[i]])
+  diff$C7 <- as.vector(f)
+  diff$Harmonia <-  as.vector(h)
+  diff
+})
+
+#als DF + ohne NAN
+df_pro_Jahr_C7_Harmonia_without_NAN_transformiert <- do.call(rbind.data.frame, diff_C7_Harmonia_transformiert)%>%
+  filter(! is.na(Freq))
+df_pro_Jahr_C7_Harmonia_without_NAN_transformiert
