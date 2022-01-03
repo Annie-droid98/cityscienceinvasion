@@ -4,6 +4,7 @@ library(purrr)
 library(tidyverse)
 library(MASS)
 library(spaMM)
+
 #Einlesen Daten mit den Filtern: Mammalia Großbritanien, present, human observations, zwischen 2000-2021
 Mammalia.GB <- vroom::vroom("0076293-210914110416597.csv",quote="",show_col_types = FALSE)
 
@@ -20,7 +21,7 @@ Mammalia.GB_transformiert <- mammalia.GB_selected %>%
   filter((! is.na(decimalLatitude)))%>%
   sf::st_as_sf(coords = c(2,3))%>%
   st_set_crs(4326)%>%
-  st_transform(5643)%>%
+  st_transform(st_crs(GB_and_IE_grid_10km))%>%
   mutate(long = unlist(map(geometry,1)),
          lat = unlist(map(geometry,2)))
 
@@ -49,29 +50,26 @@ Mammalia_GB_alle <- Mammalia.GB_transformiert %>%
 #Liste
 Different_Publisher_categories <- list(Mammalia_GB_citizenscience,Mammalia_GB_mixed,Mammalia_GB_alle)
 
-#einlesen der Grids (10km)
 
-Grids <- readRDS("Differentgridsizes")
-st_crs(Grids[[2]]) <- st_crs(Mammalia.GB_transformiert)
 
-Mammalia.Gb_10km <- Grids[[2]] %>%
+Mammalia.Gb_10km <- GB_and_IE_grid_10km %>%
   st_join(st_sf(Different_Publisher_categories[[1]])) %>%
   transform(isVulgaris = species%in%"Sciurus vulgaris", isCarolinensis = species%in%"Sciurus carolinensis")%>%
-  group_by(year,id) %>%
+  group_by(year,CELLCODE) %>%
   count(isVulgaris, isCarolinensis, countMammalia = !isVulgaris&!isCarolinensis)%>%
   transform(what = ifelse(isVulgaris,"S.vulgaris", ifelse(isCarolinensis,"S.carolinensis", "countMammalia")))%>%
   spread(what,n)
 
 #Mittelpunkt der grids
-Mammalia.Gb_10km$Centergrid <-st_centroid(Mammalia.Gb_10km$x)
-Mammalia.Gb_10km_2 <- Mammalia.Gb_10km%>%
-  mutate(long = unlist(map(Centergrid,1)),
-         lat = unlist(map(Centergrid,2)))
+#Mammalia.Gb_10km$Centergrid <-st_centroid(Mammalia.Gb_10km$x)
+#Mammalia.Gb_10km_2 <- Mammalia.Gb_10km%>%
+ # mutate(long = unlist(map(Centergrid,1)),
+        # lat = unlist(map(Centergrid,2)))
 
 
 #Weiter zusammenfassen der Tabelle
-Mammalia.GB_10km_2 <- Mammalia.Gb_10km_2 %>%
-  unite('IDYear', id:year, remove = FALSE)
+Mammalia.GB_10km_2 <- Mammalia.Gb_10km %>%
+  unite('IDYear', CELLCODE:year, remove = FALSE)
 
 
 df_Mammalia_Gb_10km <- Mammalia.GB_10km_2%>% 
@@ -89,12 +87,12 @@ df_Mammalia_Gb_10km <- transform(df_Mammalia_Gb_10km, AllMammalia = countMammali
 
 saveRDS(df_Mammalia_Gb_10km, "Mammaliacounts_10km")
 Mammaliacount_10km <- readRDS("Mammaliacounts_10km")
-saveRDS(df_Mammalia_Gb_10km_mixed,"Mammalia.mixed")
-Mammalia.mixed <- readRDS("Mammalia.mixed")
+#saveRDS(df_Mammalia_Gb_10km_mixed,"Mammalia.mixed")
+#Mammalia.mixed <- readRDS("Mammalia.mixed")
 
 #Glm 
-glm_10km_offset <- glm.nb(formula = S.vulgaris ~ offset(log(AllMammalia)) + scale(S.carolinensis) + I(2000-year) + lat +long, maxit = 1000,
-                          data = Mammalia.mixed )
+glm_10km_offset <-  glm.nb(formula = S.vulgaris ~ offset(log(AllMammalia)) + scale(S.carolinensis) + I(2000-year), maxit = 5000,
+                           data = Mammaliacount_10km)
 
 spatialglm.nb_Mammalia <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia))
                                 + scale(S.carolinensis) + I(2000-year)+ Matern(1|long + lat),
