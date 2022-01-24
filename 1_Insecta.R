@@ -63,7 +63,7 @@ Insecta_citizenscience_10kmgrid <- Europe10grid %>%
 #Festlegung des Mittelpunktes von jedem grid für spätere spatial Analysen
 #Insecta_citizenscience_10kmgrid$centroid <-st_centroid(Insecta_citizenscience_10kmgrid$x)
 
-#Insecta_citizenscience_10kmgrid <-Insecta_citizenscience_10kmgrid%>%
+Insecta_citizenscience_10kmgrid <-Insecta_citizenscience_10kmgrid%>%
   mutate(long = unlist(map(centroid,1)),
          lat = unlist(map(centroid,2)))
 
@@ -85,7 +85,59 @@ Insecta_citizenscience_10kmgrid_2 <- transform(Insecta_citizenscience_10kmgrid_1
 saveRDS(Insecta_citizenscience_10kmgrid_2, file = "Insectacounts_10km")
 Insecta_Counts_10km <- readRDS("Insectacounts_10km")
 
+Vegetation_europe_Ladybug_10km <- readRDS("Vegetation_europe_Ladybug_10km")
+Insecta_with_vegetation <- merge(Insecta_Counts_10km, Vegetation_europe_Ladybug_10km, by="CellCode")
+
+
+
+
+Insecta_counts_with_vegetation$Centergrid <-st_centroid(Insecta_counts_with_vegetation$geometry)
+Insecta_counts_with_vegetation<- Insecta_counts_with_vegetation%>%
+  mutate(long = unlist(map(Centergrid,1)),
+         lat = unlist(map(Centergrid,2)))
+saveRDS(Insecta_counts_with_vegetation, file = "Insecta_counts_with_vegetation")
+Insecta_counts_with_vegetation <- readRDS("Insecta_counts_with_vegetation")
+
 #Glm 
-Insecta_citizenscience_glm <- glm.nb(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year), maxit = 1000,
-                                           data = Insecta_citizenscience_10kmgrid_2)
+Insecta_citizenscience_glm <- glm.nb(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long +lat, maxit = 1000,
+                                           data = Insecta_counts_with_vegetation)
+
+Insecta_counts_with_vegetation_2 <-Insecta_counts_with_vegetation%>%
+  mutate_at(vars(clc_9, clc_11, clc_22, clc_25, clc_26, clc_39, clc_44), as.numeric)
+ # transform(Vegetation = clc_9 +clc_11 + clc_22 + clc_25 + clc_26 + clc_39 + clc_44)
+ # filter( Vegetation != 0)
+
+#spaMM
+library(spaMM)
+Ladybugs_glm <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long +lat, family = negbin(), control.glm=list(maxit=1000),
+                      data = Insecta_counts_with_vegetation)
+
+#mit clc_22 converged es nicht, mit 25 schon
+Ladybugs_glm_vegetation <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long + lat + scale(clc_9) + scale(clc_11) + scale(clc_22) + scale(clc_25) + scale(clc_26) +scale(clc_39) , family = negbin(), control.glm=list(maxit=10000),
+                                 control.HLfit= list(max.iter.mean =500),
+                                 data = Insecta_counts_with_vegetation_2)
+
+Ladybugs_glm_vegetation_ohneagra <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long + lat + scale(clc_11) + scale(clc_22), family = negbin(), control.glm=list(maxit=1000),
+                                 control.HLfit= list(max.iter.mean =500),
+                                 data = Insecta_counts_with_vegetation_2)
+Ladybugs_glm_vegetation_f_g_w_s <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long + lat + scale(clc_25) + scale(clc_26) +scale(clc_39) , family = negbin(), control.glm=list(maxit=1000),
+                                      control.HLfit= list(max.iter.mean =500),
+                                      data = Insecta_counts_with_vegetation_2)
+
+
+Ladybugs_glmm_vegetation <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year)
+                + as.numeric(clc_9) + clc_11 + clc_22 + clc_25 + clc_26 + clc_39 + clc_44 + Matern(1|long + lat), family = negbin(), control.glm=list(maxit=1000),
+                                 data = Insecta_counts_with_vegetation)
 spatialglm.nb <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year)+ Matern(1|long + lat), data = Insecta_Counts_10km, family = negbin() )
+
+
+library(GGally)
+
+as.tibble(Insecta_counts_with_vegetation)%>%
+  dplyr::select(clc_9, clc_11, clc_22, clc_25, clc_26, clc_39, clc_44)%>%
+  #mutate_at(vars(clc_9, clc_11, clc_22, clc_25, clc_26, clc_39, clc_44), as.numeric)
+  #mutate_if(is.character,as.numeric)
+ # dplyr::select_if(is.numeric)%>%
+ # cor()
+  ggpairs()
+
