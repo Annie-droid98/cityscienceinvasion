@@ -24,9 +24,11 @@ Mammalia.GB <- mammalia.GB_selected_21 %>%
   filter((! is.na(decimalLatitude)))%>%
   sf::st_as_sf(coords = c(2,3))%>%
   st_set_crs(4326)%>%
-  st_transform(st_crs(Grid_ohneduplices))%>%
-  mutate(long = unlist(map(geometry,1)),
-         lat = unlist(map(geometry,2)))
+  st_transform(st_crs(Grid_ohneduplices))
+
+Mammalia.GB <- Mammalia.GB %>%
+  dplyr::mutate(long = sf::st_coordinates(Mammalia.GB_2)[,1],
+                lat = sf::st_coordinates(Mammalia.GB_2)[,2])
 
 #Publisherliste
 Mammalia_observations_GB <- vroom::vroom("EichhörnchenPublisheruntil1000obs.csv",
