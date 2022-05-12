@@ -280,13 +280,49 @@ crop_vegetationsquirrel_Ausschnitt <- crop(x = clc_2018_landcover_squirrels, Aus
 
 png(filename= "MapwithGrid.png")
 
-Vegetation_europe_map_squirrels <- plot(crop_vegetationsquirrel_Ausschnitt,  legend = FALSE, breaks=cuts_s, col= c("#737373","#addd8e","#fec44f","#005a32","#88419d","#8c2d04","#dd3497","#0c2c84"))
-
+plot(crop_vegetationsquirrel_Ausschnitt,  legend = FALSE, breaks=cuts_s, col= c("#737373","#addd8e","#fec44f","#005a32","#88419d","#8c2d04","#dd3497","#0c2c84"),xaxt = "n", yaxt = "n")
+axis(1, at = c(3540000, 3570000, 3600000, 3630000, 3660000))
+axis(2, at = c(3125000, 3150000, 31750000, 3200000, 3225000))
+text(x = crop_Grid_Ausschnitt_2018$lon,
+     y = crop_Grid_Ausschnitt_2018$lat,
+     labels = crop_Grid_Ausschnitt_2018$AllMammalia, col = "black")
 plot(crop_GB_and_IE_grid_10km_shp , add=T)
+
+
+
 legend("topright", inset=c(-0.9, .5),legend = c("Grey urban", "Green urban", "Agrar", "Broadleafed_Forrest",
                                                 "Mixed_Forest","Coniferous_Forest", "Other semi-natural", "Waterbodies"),fill = c("#737373","#addd8e","#fec44f","#005a32","#88419d","#8c2d04","#dd3497","#0c2c84"))
+dev.off()
+
+cutsgrey =c(1,9,44)
+png(filename= "MapwithGridgreyurban.png")
+
+plot(crop_vegetationsquirrel_Ausschnitt,  legend = FALSE, breaks=cutsgrey, col= c("#737373","#ece7f2"),xaxt = "n", yaxt = "n")
+axis(1, at = c(3540000, 3570000, 3600000, 3630000, 3660000))
+axis(2, at = c(3125000, 3150000, 31750000, 3200000, 3225000))
+text(x = crop_Grid_Ausschnitt_2018$lon,
+     y = crop_Grid_Ausschnitt_2018$lat,
+     labels = crop_Grid_Ausschnitt_2018$AllMammalia, col = "black")
+plot(crop_GB_and_IE_grid_10km_shp , add=T)
 
 
+
+legend("topright", inset=c(-0.9, .5),legend = c("Grey urban", "Green urban", "Agrar", "Broadleafed_Forrest",
+                                                "Mixed_Forest","Coniferous_Forest", "Other semi-natural", "Waterbodies"),fill = c("#737373","#addd8e","#fec44f","#005a32","#88419d","#8c2d04","#dd3497","#0c2c84"))
 dev.off()
 
 
+
+Squirrel_observations <- Mammalia_GB_citizenscience_21%>%
+  filter(species == "Sciurus vulgaris" & year == 2020 | species == "Sciurus carolinensis" & year == 2020 )
+
+png(filename= "Mapwithbothsquirrels.png")
+map_bothsquirrels <- ggplot(Squirrel_observations) +
+  geom_point(aes(x = long, y= lat, color = species)) 
+map_bothsquirrels_2 <- map_bothsquirrels + geom_segment(aes(x = 3200000, y = 3700000, xend = 3185000, yend = 3615000),
+                 arrow = arrow(length = unit(0.5, "cm")))
+map_bothsquirrels_3 <- map_bothsquirrels_2 + geom_segment(aes(x = 3500000, y = 3500000, xend = 3485000, yend = 3445000),
+                                 arrow = arrow(length = unit(0.5, "cm")))
+map_bothsquirrels_3 + geom_polygon(data = Grid_ohneduplices, aes(x = long, y = lat))
+
+dev.off()
