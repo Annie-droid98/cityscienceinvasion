@@ -24,7 +24,7 @@ png(filename= "Line_plot_allspecies.png")
 ggplot(species_df, aes(x = year, y = n, color = species)) +
   geom_line()+
   scale_y_log10()+
-  ylab("log(number of observations)")+
+  ylab("Number of observations")+
   theme_minimal()+
   ggtitle("Number of citizenscience observations over the years")+
   theme(legend.text = element_text(size=10, 
@@ -149,8 +149,8 @@ png(filename= "MapSquirrels.png")
 Vegetation_europe_map_squirrels <- plot(Squirrels_map_GB_crop,  legend = FALSE, breaks=cuts_s, col= c("#737373","#addd8e","#fec44f","#005a32","#8c2d04","#88419d","#dd3497","#0c2c84"))
 
 
-legend(x = 2500000, y = 4500000, legend = c("Grey_urban", "green_urban", "Agrar", "Broadleafed_Forrest",
-                                            "Mixed_Forest","Coniferous_Forest", "Other semi-natural", "Waterbodies"),fill = c("#737373","#addd8e","#fec44f","#005a32","#8c2d04","#88419d","#dd3497","#0c2c84"), cex = 1, inset = 1)
+legend(x = 2500000, y = 4500000, legend = c("Grey_urban", "green_urban", "Agrar", "Broadleafed_Forrest","Coniferous_Forest",
+                                            "Mixed_Forest", "Other semi-natural", "Waterbodies"),fill = c("#737373","#addd8e","#fec44f","#005a32","#8c2d04","#88419d","#dd3497","#0c2c84"), cex = 1, inset = 1)
 dev.off()
 # scale_color_manual(values = c("#737373","#b10026","#ffeda0","#005a32","#8c2d04","#7fcdbb","#88419d","#0c2c84"))
 #,fill =brewer.pal(n = 8, name = "Set1"), cex = 0.7, inset = 0.9)
@@ -236,7 +236,7 @@ png(filename= "Stackedbarplotlines.png")
              position = position_stack())+
 geom_text(aes(label = paste0(Proportion, "%")),
           position = position_stack(vjust = 0.5)) +
-  scale_fill_manual(values = c("#fec44f","#005a32","#88419d","#addd8e","#737373","#8c2d04","#dd3497","#0c2c84"))+
+  scale_fill_manual(values = c("#fec44f","#005a32","#8c2d04","#addd8e","#737373","#88419d","#dd3497","#0c2c84"))+
   # scale_fill_brewer(palette = "Set1") +
   theme_minimal(base_size = 16) +
   ylab("Percentage") +
@@ -318,11 +318,13 @@ Squirrel_observations <- Mammalia_GB_citizenscience_21%>%
 
 png(filename= "Mapwithbothsquirrels.png")
 map_bothsquirrels <- ggplot(Squirrel_observations) +
-  geom_point(aes(x = long, y= lat, color = species)) 
+  geom_point(aes(x = long, y= lat, color = species)) +
+  ggtitle("Observations of the native and the invasive squirrel in 2020")
+
 map_bothsquirrels_2 <- map_bothsquirrels + geom_segment(aes(x = 3200000, y = 3700000, xend = 3185000, yend = 3615000),
                  arrow = arrow(length = unit(0.5, "cm")))
-map_bothsquirrels_3 <- map_bothsquirrels_2 + geom_segment(aes(x = 3500000, y = 3500000, xend = 3485000, yend = 3445000),
+ map_bothsquirrels_2 + geom_segment(aes(x = 3500000, y = 3500000, xend = 3485000, yend = 3445000),
                                  arrow = arrow(length = unit(0.5, "cm")))
-map_bothsquirrels_3 + geom_polygon(data = Grid_ohneduplices, aes(x = long, y = lat))
+#map_bothsquirrels_3 + geom_polygon(data = GB_and_IE_grid_10km_shp, aes( x = long  , y= lat))
 
 dev.off()
