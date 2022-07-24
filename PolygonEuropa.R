@@ -10,8 +10,16 @@ Europe10grid <- shapefile(file.path(tempdir(), "europe_10km.shp"))
 Europe10grid  <- st_as_sf(Europe10grid)
 #europe_grid_10 <- subset(Europe10grid, select = -c(NofOrigin, EofOrigin))
 
-europe_grid_10km <- cbind(Europe10grid, "Grid_id"=1:nrow(Europe10grid)) 
-europe_grid_10km <- subset(europe_grid_10km, select = -c(NofOrigin, EofOrigin, CellCode))
+
+download.file("https://gisco-services.ec.europa.eu/distribution/v2/countries/shp/CNTR_BN_01M_2020_3035.shp.zip", destfile = file.path(tempdir(), "CNTR_BN_01M_2020_3035.shp.zip"), mode = "wb")
+unzip(zipfile = file.path(tempdir(), "CNTR_BN_01M_2020_3035.shp.zip"), exdir = tempdir())
+
+Europa_Karte <- shapefile(file.path(tempdir(),"CNTR_BN_01M_2020_3035.shp"))
+
+plot(Europa_Karte)
+
+#europe_grid_10km <- cbind(Europe10grid, "Grid_id"=1:nrow(Europe10grid)) 
+#europe_grid_10km <- subset(europe_grid_10km, select = -c(NofOrigin, EofOrigin, CellCode))
 
 
 download.file("https://www.eea.europa.eu/data-and-maps/data/eea-reference-grids-2/gis-files/germany-spatialite/at_download/file", destfile = file.path(tempdir(), "Germany_spatialite.zip"), mode = "wb")
