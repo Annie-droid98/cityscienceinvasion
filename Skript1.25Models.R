@@ -1115,7 +1115,7 @@ saveRDS(Model_table_carolinensis_3_moreverte,"Carolinensismorevertetabellealle.r
 
 
 #alle pub more verte
-diff_glmm_formula_vertebrata_alle <- list(
+diff_glmm_formula_vertebrata_all <- list(
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + 
             Proportion_marten_z+
@@ -1125,7 +1125,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + 
             Proportion_marten_z+
@@ -1135,7 +1135,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1144,7 +1144,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z + 
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1153,7 +1153,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1162,7 +1162,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z + 
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1171,7 +1171,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + 
             Proportion_carolinensis_z +
@@ -1179,11 +1179,11 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Mixed_Forest_z + Broadleafed_Forest_z + Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1191,7 +1191,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Broadleafed_Forest_z + Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1199,7 +1199,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1207,7 +1207,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1215,7 +1215,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z + 
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1224,7 +1224,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1233,7 +1233,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Grey_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z + 
             Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1241,7 +1241,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Broadleafed_Forest_z + Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1249,7 +1249,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.vulgaris ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_carolinensis_z +
@@ -1257,7 +1257,7 @@ diff_glmm_formula_vertebrata_alle <- list(
             Proportion_carolinensis_z:Proportion_marten_z +
             Proportion_carolinensis_z:Grey_urban_z + Proportion_carolinensis_z:green_urban_z +
             Proportion_carolinensis_z:Mixed_Forest_z + Proportion_carolinensis_z:Broadleafed_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))))
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))))
 
 fits_vulgaris_vertebrata <- lapply((diff_glmm_formula_vertebrata), function(i){
   fitme(i,family = negbin(link = "log"),
@@ -1296,7 +1296,7 @@ saveRDS(Model_table_vulgaris_3_verte,"Vertebratavulgaristabellealle.rds")
 #saveRDS(Model_table_vulgaris_3_verte,"Vertebratavulgaristabellecit.rds")
 
 
-diff_glmm_formula_caro_moreverte <- list(
+diff_glmm_formula_caro_moreverte_all <- list(
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1305,7 +1305,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + 
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1314,7 +1314,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1323,7 +1323,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1332,7 +1332,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + 
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z +
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1341,7 +1341,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z +
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1350,7 +1350,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z +
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z +
             Proportion_vulgaris_z +
@@ -1358,11 +1358,11 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z +
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Mixed_Forest_z + Broadleafed_Forest_z + Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1370,7 +1370,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Broadleafed_Forest_z + Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1378,7 +1378,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1386,7 +1386,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1394,7 +1394,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1403,7 +1403,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1412,7 +1412,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Grey_urban_z + 
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z + 
             Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1420,7 +1420,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Broadleafed_Forest_z + Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1428,7 +1428,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Coniferous_Forest_z +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))),
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))),
   formula(S.carolinensis ~ offset(AllMammalia_log) + year_from_2000 +
             Grey_urban_z + green_urban_z + Agrar_z + Other_seminatural_z + Proportion_marten_z+
             Proportion_vulgaris_z +
@@ -1436,7 +1436,7 @@ diff_glmm_formula_caro_moreverte <- list(
             Proportion_vulgaris_z:Proportion_marten_z +
             Proportion_vulgaris_z:Grey_urban_z + Proportion_vulgaris_z:green_urban_z +
             Proportion_vulgaris_z:Mixed_Forest_z + Proportion_vulgaris_z:Broadleafed_Forest_z  +
-            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte, fixed=c(alpha=1.25))))
+            MaternIMRFa(1|lon+lat, mesh=mesh_moreverte_mixed, fixed=c(alpha=1.25))))
 
 
 fits_carolinensis_moreverte_all <- lapply((diff_glmm_formula_caro_moreverte_all), function(i){
@@ -1450,7 +1450,7 @@ saveRDS(fits_carolinensis_moreverte,"fits_carolinensis_moreverteallepub.rds")
 
 
 pValues_caro_moreverte_all <- lapply((2:17), function(i){
-  anova(fits_carolinensis_moreverte[[1]], fits_carolinensis_moreverte[[i]])
+  anova(fits_carolinensis_moreverte_all[[1]], fits_carolinensis_moreverte_all[[i]])
 })
 
 Carolinensis_table_moreverte_all <- as.data.frame(spaMM:::.make_beta_table(fits_carolinensis_moreverte_all[[1]]))
