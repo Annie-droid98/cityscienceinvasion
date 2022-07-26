@@ -27,4 +27,3 @@ Grid_ohneduplices <- GB_and_IE_grid_10km%>%
 #as shapefile
 GB_and_IE_grid_10km_shp <- bind(Ireland_10grid, GB_10grid)
 
-
