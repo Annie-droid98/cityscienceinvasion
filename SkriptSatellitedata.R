@@ -6,7 +6,7 @@ library(fasterize)
 library(sf)
 library(dplyr)
 
-
+#Download the raster: https://land.copernicus.eu/pan-european/corine-land-cover/clc2018?tab=download
 
 
 clc_2018_landcover <- raster("u2018_clc2018_v2020_20u1_raster100m/DATA/U2018_CLC2018_V2020_20u1.tif")
