@@ -95,31 +95,31 @@ Vegetation_europe_squirrels_10km <- cbind(prop_table_squirrels, "CELLCODE"=Europ
 saveRDS(Vegetation_europe_squirrels_10km, "Vegetation_europe_squirrels_10km")
 
 
-Squirrels_in_Gb <- Mammalia_GB_citizenscience%>%
-  filter(species == "Sciurus vulgaris"| species == "Sciurus carolinensis")%>%
-  dplyr:: select(species, year, long, lat)%>%
-  as.data.frame()
-Squirrels_in_Gb_2 <- SpatialPointsDataFrame(coords = Squirrels_in_Gb[,3:4], data =Squirrels_in_Gb)
-extract_squirrels <- raster:: extract(clc_2018_landcover_squirrels ,Squirrels_in_Gb_2 )
-Values_squirrel <- cbind(Squirrels_in_Gb_2,extract_squirrels )
+#Squirrels_in_Gb <- Mammalia_GB_citizenscience%>%
+ # filter(species == "Sciurus vulgaris"| species == "Sciurus carolinensis")%>%
+  #dplyr:: select(species, year, long, lat)%>%
+  #as.data.frame()
+#Squirrels_in_Gb_2 <- SpatialPointsDataFrame(coords = Squirrels_in_Gb[,3:4], data =Squirrels_in_Gb)
+#extract_squirrels <- raster:: extract(clc_2018_landcover_squirrels ,Squirrels_in_Gb_2 )
+#Values_squirrel <- cbind(Squirrels_in_Gb_2,extract_squirrels )
 
-Values_squirrel_df <- as.data.frame(Values_squirrel)
+#Values_squirrel_df <- as.data.frame(Values_squirrel)
 
-Values_squirrel_df  <- Values_squirrel_df%>%
-  rename(Vegetation = c.22..11..24..11..11..11..22..11..9..11..11..9..11..9..22..11..)
+#Values_squirrel_df  <- Values_squirrel_df%>%
+ # rename(Vegetation = c.22..11..24..11..11..11..22..11..9..11..11..9..11..9..22..11..)
 
-Vegetation_each_squirrelobs <- Values_squirrel_df$Vegetation
+#Vegetation_each_squirrelobs <- Values_squirrel_df$Vegetation
 
 # change fill and outline color manually 
-Squirrels_hist <- ggplot(Values_squirrel_df, aes(x = Vegetation)) +
-  geom_histogram(aes(color = species, fill = species), 
-                 position = "identity", bins = 30, alpha = 0.8) +
-  scale_color_manual(values = c("#00AFBB", "#E7B800")) +
-  scale_fill_manual(values = c("#00AFBB", "#E7B800"))
+#Squirrels_hist <- ggplot(Values_squirrel_df, aes(x = Vegetation)) +
+ # geom_histogram(aes(color = species, fill = species), 
+  #               position = "identity", bins = 30, alpha = 0.8) +
+  #scale_color_manual(values = c("#00AFBB", "#E7B800")) +
+  #scale_fill_manual(values = c("#00AFBB", "#E7B800"))
 
 
-legend(x=52, y=7000, legend = c("Grey urban", "Green urban", "Agrar", "Broadleaf Forest",
-                                "Coniferous Forest", "Mixed Forest", "Other semi-natural", "Waterbodies"), cex = 0.7, inset = 0.9)
+#legend(x=52, y=7000, legend = c("Grey urban", "Green urban", "Agrar", "Broadleaf Forest",
+ #                               "Coniferous Forest", "Mixed Forest", "Other semi-natural", "Waterbodies"), cex = 0.7, inset = 0.9)
 
 clc_2018_landcover_squirrels_1km <- raster("clc_2018_landcover_categories_Squirrels")
 
