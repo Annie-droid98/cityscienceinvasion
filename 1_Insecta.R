@@ -91,21 +91,33 @@ Insecta_with_vegetation <- merge(Insecta_Counts_10km, Vegetation_europe_Ladybug_
 
 
 
-Insecta_counts_with_vegetation$Centergrid <-st_centroid(Insecta_counts_with_vegetation$geometry)
-Insecta_counts_with_vegetation<- Insecta_counts_with_vegetation%>%
+Insecta_with_vegetation$Centergrid <-st_centroid(Insecta_with_vegetation$geometry)
+Insecta_with_vegetation<- Insecta_with_vegetation%>%
   mutate(long = unlist(map(Centergrid,1)),
          lat = unlist(map(Centergrid,2)))
-saveRDS(Insecta_counts_with_vegetation, file = "Insecta_counts_with_vegetation")
+
+Insecta_counts_with_vegetation_2 <-Insecta_with_vegetation%>%
+  mutate_at(vars(clc_9, clc_11, clc_22,clc_23, clc_24, clc_25, clc_26, clc_39, clc_44), as.numeric)%>%
+  transform(Vegetation = clc_9 +clc_11 + clc_22 + clc_23+ clc_24 + clc_25 + clc_26 + clc_39 + clc_44)%>%
+  filter( Vegetation != 0)
+
+Insecta_counts_with_vegetation_2 <- as_tibble(Insecta_counts_with_vegetation_2)
+Insecta_counts_with_vegetation_2 <- Insecta_counts_with_vegetation_2%>%
+  rename(Grey_urban = clc_9, Green_urban = clc_11, Agrar= clc_22, Broadleaved_Forest = clc_23,
+         Coniferous_Forest = clc_24, Mixed_Forest = clc_25,
+         Grassland = clc_26, Other_natural = clc_39, Waterbodies= clc_44)
+
+Insecta_counts_with_vegetation_2 <- Insecta_counts_with_vegetation_2%>%
+  transform(Proportion_H.axyridis = H.axyridis/AllInsecta)
+
+saveRDS(Insecta_counts_with_vegetation_2, file = "Insecta_counts_with_vegetation")
 Insecta_counts_with_vegetation <- readRDS("Insecta_counts_with_vegetation")
 
 #Glm 
 Insecta_citizenscience_glm <- glm.nb(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long +lat, maxit = 1000,
                                            data = Insecta_counts_with_vegetation)
 
-Insecta_counts_with_vegetation_2 <-Insecta_counts_with_vegetation%>%
-  mutate_at(vars(clc_9, clc_11, clc_22, clc_25, clc_26, clc_39, clc_44), as.numeric)
- # transform(Vegetation = clc_9 +clc_11 + clc_22 + clc_25 + clc_26 + clc_39 + clc_44)
- # filter( Vegetation != 0)
+
 
 #spaMM
 library(spaMM)
@@ -113,9 +125,19 @@ Ladybugs_glm <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + sca
                       data = Insecta_counts_with_vegetation)
 
 #mit clc_22 converged es nicht, mit 25 schon
-Ladybugs_glm_vegetation <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long + lat + scale(clc_9) + scale(clc_11) + scale(clc_22) + scale(clc_25) + scale(clc_26) +scale(clc_39) , family = negbin(), control.glm=list(maxit=10000),
+Ladybugs_glm_vegetation <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta))
+                                + I(2000-year) + scale(Grey_urban)
+                                 + scale(Green_urban) + scale(Agrar) + scale(Forest)*scale(Proportion_H.axyridis) 
+                                 + scale(Grassland)*scale(Proportion_H.axyridis) + scale(Other_natural) , family = negbin(),
                                  control.HLfit= list(max.iter.mean =500),
                                  data = Insecta_counts_with_vegetation_2)
+
+
+Ladybugs_glm_mass <- glm.nb(fitme(formula = C.septempunctata ~ offset(log(AllInsecta))
+                                  + I(2000-year) + scale(Grey_urban)
+                                  + scale(Green_urban) + scale(Agrar) + scale(Forest)*scale(Proportion_H.axyridis) 
+                                  + scale(Grassland)*scale(Proportion_H.axyridis) + scale(Other_natural),
+                                  data = Insecta_counts_with_vegetation_2))
 
 Ladybugs_glm_vegetation_ohneagra <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) + scale(H.axyridis) + I(2000-year) + long + lat + scale(clc_11) + scale(clc_22), family = negbin(), control.glm=list(maxit=1000),
                                  control.HLfit= list(max.iter.mean =500),
@@ -140,4 +162,46 @@ as.tibble(Insecta_counts_with_vegetation)%>%
  # dplyr::select_if(is.numeric)%>%
  # cor()
   ggpairs()
+
+
+# Um es mit verschiedenen Waldtypen zu testen
+Vegetation_europe_squirrels_10km <- readRDS("Vegetation_europe_squirrels_10km")
+Insecta_with_vegetation_Forrest <- as_tibble(Insecta_Counts_10km)%>%
+  rename(CELLCODE=CellCode)
+Insecta_with_vegetation_Forrest <- merge(Insecta_with_vegetation_Forrest, Vegetation_europe_squirrels_10km, by="CELLCODE")
+
+Insecta_with_vegetation_Forrest$Centergrid <-st_centroid(Insecta_with_vegetation_Forrest$geometry)
+Insecta_with_vegetation_Forrest<- Insecta_with_vegetation_Forrest%>%
+  mutate(long = unlist(map(Centergrid,1)),
+         lat = unlist(map(Centergrid,2)))
+
+Insecta_with_vegetation_Forrest_2 <-Insecta_with_vegetation_Forrest%>%
+  mutate_at(vars(clc_9_s, clc_11_s, clc_22_s, clc_23_s, clc_24_s, clc_25_s, clc_39_s, clc_44_s), as.numeric)%>%
+  transform(Vegetation = clc_9_s +clc_11_s + clc_22_s +clc_23_s + clc_24_s + clc_25_s + clc_39_s + clc_44_s)%>%
+  filter( Vegetation != 0)
+
+Insecta_with_vegetation_Forrest_2 <-Insecta_with_vegetation_Forrest_2%>%
+rename(Grey_urban = clc_9_s, green_urban = clc_11_s, Agrar = clc_22_s, 
+       Broadleafed_Forest = clc_23_s, Coniferous_Forest = clc_24_s, Mixed_Forest = clc_25_s,
+       Other_seminatural =clc_39_s, Waterbodies =clc_44_s)
+
+Insecta_with_vegetation_Forrest_2 <-Insecta_with_vegetation_Forrest_2%>%
+transform(Proportion_H.axyridis = H.axyridis/AllInsecta)
+
+
+glm_10km_offset_Ladybug_forrest <- fitme(formula = C.septempunctata ~ offset(log(AllInsecta)) 
+                                     + I(2000-year) + scale(Grey_urban)
+                                    + scale(green_urban) + scale(Agrar) 
+                                    + scale(Mixed_Forest)+ scale(Other_seminatural) 
+                                    + scale(Broadleafed_Forest)*scale(Proportion_H.axyridis)
+                                    + scale(Coniferous_Forest)*scale(Proportion_H.axyridis) , family = negbin(),
+                                    data = Insecta_with_vegetation_Forrest_2)
+
+Ladybugs_glm_mass_forrest <- glm.nb(formula = C.septempunctata ~ offset(log(AllInsecta)) 
+                                    + I(2000-year) + scale(Grey_urban)
+                                    + scale(green_urban) + scale(Agrar) 
+                                    + scale(Mixed_Forest)+ scale(Other_seminatural) 
+                                    + scale(Broadleafed_Forest)*scale(Proportion_H.axyridis)
+                                    + scale(Coniferous_Forest)*scale(Proportion_H.axyridis),
+                                    data = Insecta_with_vegetation_Forrest_2)
 
