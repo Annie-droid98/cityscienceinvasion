@@ -92,6 +92,7 @@ Mammaliacount_10km_with_vegetation <- merge(Mammaliacount_10km, Vegetation_europ
 
 saveRDS(Mammaliacount_10km_with_vegetation,"Mammaliacount_10km_with_vegetation")
 
+Mammaliacount_10km_with_vegetation <- readRDS("Mammaliacount_10km_with_vegetation")
 #saveRDS(df_Mammalia_Gb_10km_mixed,"Mammalia.mixed")
 #Mammalia.mixed <- readRDS("Mammalia.mixed")
 
@@ -106,35 +107,29 @@ Mammaliacount_10km_with_vegetation_2 <- Mammaliacount_10km_with_vegetation_2%>%
          Other_seminatural =clc_39_s, Waterbodies =clc_44_s)
 
 Mammaliacount_10km_with_vegetation_2 <- Mammaliacount_10km_with_vegetation_2%>%
-  transform(Proportion_carolinensis = S.carolinensis/AllMammalia)
+  transform(Proportion_carolinensis = S.carolinensis/(AllMammalia-S.vulgaris))
+
 #Glm 
 library(spaMM)
 glm_10km_offset <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) + scale(S.carolinensis) + I(2000-year) + long +lat, family = negbin(),
                           data = Mammaliacount_10km_with_vegetation)
 
-#ohne lat + long converged es mit noch nicht
-glm_10km_offset_vegetation <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) 
-                                    + scale(Proportion_carolinensis) + I(2000-year) + scale(Grey_urban)
-                                    + scale(green_urban) + scale(Agrar) 
-                                    + scale(Broadleafed_Forest) + scale(Coniferous_Forest) 
-                                    + scale(Mixed_Forest)+ scale(Other_seminatural) 
-                                    + scale(Proportion_carolinensis):scale(Broadleafed_Forest) , family = negbin(),
-                         data = Mammaliacount_10km_with_vegetation_2)
 
-glm_10km_offset_vegetation_2 <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) 
+
+glm_10km_offset_vegetation <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) 
                                     + I(2000-year) + scale(Grey_urban)
                                     + scale(green_urban) + scale(Agrar) 
                                     + scale(Mixed_Forest)+ scale(Other_seminatural) 
                                     + scale(Proportion_carolinensis)*scale(Broadleafed_Forest)
                                     + scale(Proportion_carolinensis)*scale(Coniferous_Forest) , family = negbin(),
                                     data = Mammaliacount_10km_with_vegetation_2)
-plot(glm_10km_offset_vegetation_2)
+
 
 Squirrels_glm_nb <- glm.nb(formula = S.vulgaris ~ offset(log(AllMammalia)) 
                             + I(2000-year) + scale(Grey_urban)
                            + scale(green_urban) + scale(Agrar) 
                            + scale(Coniferous_Forest) 
-                           + scale(Mixed_Forest)+ scale(Other_seminatural) 
+                           + scale(Mixed_Forest)* scale(Proportion_carolinensis)+ scale(Other_seminatural) 
                            + scale(Proportion_carolinensis)*scale(Broadleafed_Forest)
                            + scale(Proportion_carolinensis)*scale(Coniferous_Forest),
                            data = Mammaliacount_10km_with_vegetation_2)
@@ -145,26 +140,21 @@ plot(prediction_squirrels)
 png(filename= "Predictions_squirrel.png")
 
 
-plot_effects(glm_10km_offset_vegetation_2 , focal_var ="Proportion_carolinensis" )
+plot_effects(glm_10km_offset_vegetation , focal_var ="Proportion_carolinensis" )
 
 
 dev.off()
 
 png(filename= "Predictions_squirrel_broadleafed.png")
-plot_effects(glm_10km_offset_vegetation_2,focal_var = "Proportion_carolinensis":"Broadleafed_Forest")
+plot_effects(glm_10km_offset_vegetation,focal_var = "Broadleafed_Forest")
 dev.off()
 
-#pdep_effects(glm_10km_offset_vegetation_2,focal_var = "Proportion_carolinensis":"Broadleafed_Forest")
+#pdep_effects(glm_10km_offset_vegetation,focal_var = "Proportion_carolinensis":"Broadleafed_Forest")
 
 residuals_squirrel <- simulateResiduals(glm_10km_offset_vegetation)
 plot(residuals_squirrel)
 testOutliers(residuals_squirrel)
 
-#Funktioniert nicht
-ggeffects::ggpredict(glm_10km_offset_vegetation)
-
-glm_10km_offset_vegetation_2 <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) + scale(S.carolinensis) + I(2000-year)  +  scale(clc_9_s) + + scale(clc_11_s)+ scale(clc_22_s)+ scale(clc_23_s) + scale(clc_24_s) + scale(clc_25_s)+ scale(clc_39_s) , family = negbin(),
-                                    data = Mammaliacount_10km_with_vegetation_2)
 
 
 #Plot glm
@@ -193,21 +183,16 @@ library(ggplot2)
    #                        data = Mammaliacount_10km)
 
 spatialglmm.nb_Mammalia <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia)) 
-                                      + scale(S.carolinensis) + I(2000-year) + scale(Grey_urban)
-                                      + scale(green_urban) + scale(Agrar) 
-                                      + scale(Broadleafed_Forest) + scale(Coniferous_Forest) 
-                                      + scale(Mixed_Forest)+ scale(Other_seminatural) + Matern(1|long + lat),
-                                control.HLfit= list(max.iter.mean =5000), family = negbin(),
-                                data = Mammaliacount_10km_with_vegetation_2)
+                                          + I(2000-year) + scale(Grey_urban)
+                                          + scale(green_urban) + scale(Agrar) 
+                                          + scale(Mixed_Forest)+ scale(Other_seminatural) 
+                                          + scale(Proportion_carolinensis)*scale(Broadleafed_Forest)
+                                          + scale(Proportion_carolinensis)*scale(Coniferous_Forest) + Matern(1|long + lat) , family = negbin(),
+                                          data = Mammaliacount_10km_with_vegetation_2)
 
 
 
 
-spatialglm.nb_Mammalia_10km <- fitme(formula = S.vulgaris ~ offset(log(AllMammalia))
-                                + scale(S.carolinensis) + I(2000-year)+ Matern(1|long + lat), family = negbin(),
-                                data = df_Mammalia_Gb__citizenscience_20km)
+  
 
-
-Sciurus_carolinensis_citizenscience <- Mammalia_GB_citizenscience%>%
-  filter(species=="Sciurus carolinensis")
 
