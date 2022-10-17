@@ -1,4 +1,11 @@
-#Counting for all publisher
+
+library(dplyr)
+library(sf)
+library(rgdal)
+library(raster)
+library(INLA)
+library(spaMM)
+#csv = downloaded from Gbif, doi:doi.org/10.15468/dl.tu6vjj
 Mammalia.GB_2021 <- vroom::vroom("0169558-210914110416597.csv",quote="",show_col_types = FALSE)
 mammalia.GB_selected_21 <- Mammalia.GB_2021 %>%
   dplyr::select(species, decimalLongitude, decimalLatitude, countryCode,
@@ -15,8 +22,8 @@ Mammalia.GB_10km <- mammalia.GB_selected_21 %>%
   st_transform(st_crs(Grid_ohneduplices))
 
 Mammalia.GB_10km <- Mammalia.GB_10km%>%
-  dplyr::mutate(long = sf::st_coordinates(Mammalia.GB_10km_mixed)[,1],
-                lat = sf::st_coordinates(Mammalia.GB_10km_mixed)[,2])
+  dplyr::mutate(long = sf::st_coordinates(Mammalia.GB_10km)[,1],
+                lat = sf::st_coordinates(Mammalia.GB_10km)[,2])
 
 #Publisher categorisation
 Mammalia_observations_GB <- vroom::vroom("EichhörnchenPublisheruntil1000obs.csv",
@@ -26,7 +33,7 @@ Mammalia_citizenscience <-Mammalia_observations_GB%>%
   filter(Observer == "1" & FocusTaxaTorF == "FALSE" )
 
 Mammalia_citizenscience<- Mammalia.GB_10km %>%
-  filter(datasetKey %in% Mammalia_GB_mixedpub_10km$datasetKey)
+  filter(datasetKey %in% Mammalia_citizenscience$datasetKey)
 
 #Filter observation data from all publishers
 Mammalia_GB_mixedpub_10km <- Mammalia_observations_GB%>%
@@ -59,6 +66,15 @@ Mammalia_GB_count_10km_2 <-Mammalia_GB_count_10km[[1]]%>%
 Mammalia_GB_count_10km_2_df <-Mammalia_GB_count_10km_2%>%
   unite('IDYear', CELLCODE:year, remove = FALSE)
 
+#only needed for predictionmaps
+#Mammalia_GB_count_try <- Mammalia_GB_count_10km_2_df%>%
+#arrange(IDYear) %>%
+# group_by(IDYear) %>%
+#fill(c(everything()), .direction = "downup") %>% 
+#ungroup() %>% 
+# distinct(IDYear, .keep_all = T)
+
+#saveRDS(Mammalia_GB_count_try,"10kmwithzeroobs.rds")
 
 Mammalia_GB_count_10km_2_df <- Mammalia_GB_count_10km_2_df%>% 
   arrange(IDYear) %>%
@@ -99,7 +115,7 @@ Mammalia_GB_count_10km_tab <- Mammalia_GB_count_10km_tab[, c("CELLCODE", "year",
                                                                                              "Coniferous_Forest", "Mixed_Forest",
                                                                                              "Other_seminatural", "Waterbodies")]
 
-
+saveRDS(Mammalia_GB_count_10km_tab, "CountedMammaliacitizenscience.rds")
 
 Mammalia_GB_count_10km_tab %>%
   mutate(across(c(Grey_urban:Waterbodies, Proportion_carolinensis, Proportion_vulgaris,
@@ -109,6 +125,7 @@ Mammalia_GB_count_10km_tab %>%
          lon = lon/1e5, lat = lat/1e5) %>% ## that seems to be important, since I guess your weird coordinate yield huge values in matrix computations
   dplyr::select(-c(Grey_urban:Waterbodies, Proportion_carolinensis, Proportion_vulgaris,
                    Proportion_marten, AllMammalia, year, CELLCODE)) -> d #d_10kmmixed for all publisher
+saveRDS(d,"Citizensciencetab.rds")
 #mesh for all publisher
 #mesh_10km_mixed <- INLA::inla.mesh.2d(loc = d_10kmmixed[, c("lon", "lat")], max.n = 100, max.edge = c(3, 20))
 mesh<- INLA::inla.mesh.2d(loc = d[, c("lon", "lat")], max.n = 100, max.edge = c(3, 20))
